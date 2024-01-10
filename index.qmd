@@ -1,15 +1,16 @@
 ---
-title: "My website and data analysis portfolio"
+title: "Chaohua's website and data analysis portfolio"
 ---
 
 # Hello
 
-### And hello again
+### Welcome to my portfolio!
 
-Welcome to **my website** and _data analysis portfolio._ 
+![](Chaohua-Li.jpg){fig-align="left" width="226"}
 
+I'm a second-year PhD student in Epidemiology. You can find information about me and my works for the course EPID8060E on this site.
 
-* Please use the `Menu Bar` above to look around.
-* Have fun!
+-   Please use the `Menu Bar` above to look around.
+-   Have fun!
 
-**Feel free to change this text any way you want 😁!**
+Feel free to contact me at cl77628\@uga.edu

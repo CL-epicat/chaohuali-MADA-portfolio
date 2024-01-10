@@ -2,6 +2,34 @@
 title: "About me"
 ---
 
-Add some text and a figure describing myself.
+![Headshot](1704864659943.jpg){fig-align="center" width="432"}
 
-For details, see the exercise instructions. 
+**Background**
+
+My name is Chaohua Li, and I'm currently a second year PhD student in Epidemiology. I'm from China and has been living in Atlanta for many years. My research interests are maternal health, health equities, and chronic diseases.
+
+**Education**
+
+PhD in Epidemiology, University of Georgia, GA, USA —Current
+
+MPH in Epidemiology, Emory University, GA, USA —2017
+
+Master in Medicine, Liaoning University of TCM, Shenyang, China —2015
+
+Bachelor in TCM, Liaoning University of TCM, Shenyang, China —2013
+
+**Professional Experience**
+
+I'm currently working as a full-time biostatistician at the National Center for Primary Care, Morehouse School of Medicine. I provides statistical support to the research core team and external collaborators using Medicaid claims data and various national survey data. Our studies focus on identifying and measuring effect of socioeconomic determinants of racial/geographical disparity in health service utility and various health outcomes including severe maternal morbidity, cardiovascular diseases, depression, mortality rate, and so on. A list of my publications is attached [here](https://www.ncbi.nlm.nih.gov/myncbi/1ZOPwUvAifq5t/bibliography/public/).
+
+Before this job, I completed a fellowship program in the Division of STD at Centers for Disease Control and Prevention, where I obtained experiences of conducting health service researches using commercial claims data and national survey data. An example of the projects that I completed is evaluation of treatment rate among people tested positive for chlamydia or gonorrhea using commercial claims data.  
+
+**Software Experience**
+
+I have profound knowledge of SAS, as it was the first statistical software that I learned and I have been using it at work. I consider myself as an intermediate RStudio programmer, and I hope this course can take my skills to a higher level.
+
+**Fun Fact About Me**
+
+I have a cat named Charlotte and I love her so much! I guess I can identify myself as a crazy cat person. Burying my head in my cat's fluffy belly helps me release pressure. I adopted Charlotte from [Furkids](https://furkids.org/) which is the largest cage-free and no-kill shelter in the Southeast. I highly recommend Furkids if you are interested in adopting a cat/dog in the Atlanta area.
+
+![My beloved Charlotte](1704864599932.jpg){width="460"}
