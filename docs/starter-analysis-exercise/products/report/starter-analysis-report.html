@@ -6,8 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Your Name">
-<meta name="dcterms.date" content="2024-01-10">
+<meta name="author" content="Chaohua Li">
+<meta name="dcterms.date" content="2024-01-18">
 
 <title>Chaohua Li Data Analysis Portfolio - Manuscript/Report Template for a Data Analysis Project</title>
 <style>
@@ -171,14 +171,14 @@ div.csl-indent {
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Your Name </p>
+             <p>Chaohua Li </p>
           </div>
   </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 10, 2024</p>
+      <p class="date">January 18, 2024</p>
     </div>
   </div>
   
@@ -190,6 +190,7 @@ div.csl-indent {
 </header>
 
 
+<p><strong>Liza Hall contributed to this exercise.</strong></p>
 <p>The structure below is one possible setup for a data analysis project (including the course project). For a manuscript, adjust as needed. You don’t need to have exactly these sections, but the content covering those sections should be addressed.</p>
 <p>This uses MS Word as output format. <a href="https://quarto.org/docs/output-formats/ms-word.html">See here</a> for more information. You can switch to other formats, like html or pdf. See <a href="https://quarto.org/">the Quarto documentation</a> for other formats.</p>
 <section id="summaryabstract" class="level1" data-number="1">
@@ -249,21 +250,26 @@ Table&nbsp;1: Data summary table.
 <div class="cell-output-display">
 <table class="do-not-create-environment cell table table-sm table-striped small">
 <colgroup>
+<col style="width: 3%">
 <col style="width: 5%">
+<col style="width: 3%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 6%">
 <col style="width: 7%">
 <col style="width: 5%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 8%">
-<col style="width: 9%">
-<col style="width: 6%">
-<col style="width: 5%">
 <col style="width: 5%">
 <col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
-<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 4%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -271,6 +277,11 @@ Table&nbsp;1: Data summary table.
 <th style="text-align: left;">skim_variable</th>
 <th style="text-align: right;">n_missing</th>
 <th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">character.min</th>
+<th style="text-align: right;">character.max</th>
+<th style="text-align: right;">character.empty</th>
+<th style="text-align: right;">character.n_unique</th>
+<th style="text-align: right;">character.whitespace</th>
 <th style="text-align: left;">factor.ordered</th>
 <th style="text-align: right;">factor.n_unique</th>
 <th style="text-align: left;">factor.top_counts</th>
@@ -286,10 +297,37 @@ Table&nbsp;1: Data summary table.
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;">character</td>
+<td style="text-align: left;">Eye</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">factor</td>
 <td style="text-align: left;">Gender</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
 <td style="text-align: left;">FALSE</td>
 <td style="text-align: right;">3</td>
 <td style="text-align: left;">M: 4, F: 3, O: 2</td>
@@ -302,11 +340,16 @@ Table&nbsp;1: Data summary table.
 <td style="text-align: right;">NA</td>
 <td style="text-align: left;">NA</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">numeric</td>
 <td style="text-align: left;">Height</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
 <td style="text-align: left;">NA</td>
 <td style="text-align: right;">NA</td>
 <td style="text-align: left;">NA</td>
@@ -319,11 +362,16 @@ Table&nbsp;1: Data summary table.
 <td style="text-align: right;">183</td>
 <td style="text-align: left;">▂▁▃▃▇</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">numeric</td>
 <td style="text-align: left;">Weight</td>
 <td style="text-align: right;">0</td>
 <td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
 <td style="text-align: left;">NA</td>
 <td style="text-align: right;">NA</td>
 <td style="text-align: left;">NA</td>
@@ -335,6 +383,28 @@ Table&nbsp;1: Data summary table.
 <td style="text-align: right;">80</td>
 <td style="text-align: right;">110</td>
 <td style="text-align: left;">▇▂▃▂▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">Age</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">33.33333</td>
+<td style="text-align: right;">17.62810</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: left;">▇▂▂▂▂</td>
 </tr>
 </tbody>
 </table>
@@ -357,6 +427,36 @@ Table&nbsp;1: Data summary table.
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-result-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: Height and weight stratified by gender.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-result2" class="quarto-xref">Figure&nbsp;2</a> shows a boxplot produced by one of the R scripts. This plot illustrates the distribution of height for people of different eye colors. In general, people of different eye colors have different distributions in height. People of black eyes have the highest median height, and people of brown eyes have the lowest median height.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-result2" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-result2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../../results/figures/eye-height.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-result2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Height by Eye Color
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-result3" class="quarto-xref">Figure&nbsp;3</a> shows a scatterplot produced by one of the R scripts. This plot illustrates the correlation between weight and age. In general, we observed a linear relationship between weight and age, with a higher weight associated with a higher age.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-result3" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-result3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="../../results/figures/weight-age.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-result3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Weight and Age
 </figcaption>
 </figure>
 </div>
@@ -422,6 +522,68 @@ Table&nbsp;2: Linear model fit table.
 </div>
 </div>
 <div style="page-break-after: always;"></div>
+<p>Example <a href="#tbl-resulttable3" class="quarto-xref">Table&nbsp;3</a> shows a summary of a linear model fit using height as outcome and age and eye color as predictors. Coefficient estimates, standard errors, test statistics and p-values are presented. One additional year in age is significantly associated with a decrease of 0.834 cm in height (P-value=0.006). Compared to people with black eyes, people of brown eyes are averagely 23.052 cm shorter (P-value=0.007).</p>
+<div class="cell">
+<div id="tbl-resulttable3" class="cell quarto-float anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-resulttable3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Linear model fit table: Height= Age + Eye Color.
+</figcaption>
+<div aria-describedby="tbl-resulttable3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">term</th>
+<th style="text-align: right;">estimate</th>
+<th style="text-align: right;">std.error</th>
+<th style="text-align: right;">statistic</th>
+<th style="text-align: right;">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: right;">199.6310606</td>
+<td style="text-align: right;">5.2410799</td>
+<td style="text-align: right;">38.089681</td>
+<td style="text-align: right;">0.0000028</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Age</td>
+<td style="text-align: right;">-0.8340909</td>
+<td style="text-align: right;">0.1591457</td>
+<td style="text-align: right;">-5.241053</td>
+<td style="text-align: right;">0.0063357</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Eyeblue</td>
+<td style="text-align: right;">-4.2742424</td>
+<td style="text-align: right;">5.0315101</td>
+<td style="text-align: right;">-0.849495</td>
+<td style="text-align: right;">0.4434597</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Eyebrown</td>
+<td style="text-align: right;">-23.0522727</td>
+<td style="text-align: right;">4.5041323</td>
+<td style="text-align: right;">-5.118028</td>
+<td style="text-align: right;">0.0068956</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Eyeother</td>
+<td style="text-align: right;">22.2530303</td>
+<td style="text-align: right;">9.0282358</td>
+<td style="text-align: right;">2.464826</td>
+<td style="text-align: right;">0.0693309</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
 </section>
 </section>
 <section id="discussion" class="level1" data-number="5">
