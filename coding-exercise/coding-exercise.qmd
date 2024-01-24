@@ -2,4 +2,109 @@
 title: "R Coding Exercise"
 ---
 
-Placeholder file for the future R coding exercise.
+1.  **Loading and checking data (gapminder)**
+
+```{r}
+#1-Loading and checking data
+#Load package dslabs and tidyr
+library("dslabs")
+library("tidyverse")
+#pull help page for gapminder
+help(gapminder)
+#check structure of gapminder
+str(gapminder) 
+#check summary of gapminder
+summary(gapminder)
+#check type of gapminder
+class(gapminder)
+```
+
+2.  **Processing data**
+
+    Create africadata which contains countries in Africa. Create infan_life that contains infant_mortality and life_expectancy, and pop_life that contains population and life_expectancy.
+
+```{r}
+#2-Processing data
+#select countries in Africa into africadata
+africadata  <- 
+  gapminder %>% 
+    filter(continent=="Africa")
+
+str(africadata) 
+summary(africadata)
+
+#create infan_life that contains infant_mortality and life_expectancy, and check structures and summary
+infan_life <-
+  africadata %>% 
+    select(infant_mortality , life_expectancy)
+str(infan_life) 
+summary(infan_life)
+
+#create pop_life that contains population  and life_expectancy, and check structures and summary
+pop_life <-
+  africadata %>% 
+    select(population , life_expectancy)
+str(pop_life) 
+summary(pop_life)
+```
+
+3.  **Plotting:**
+
+    Plot life expectancy as a function of infant mortality and as a function of population size.
+
+    ‘Streaks’ of data that seem to go together were observed from both scatterplots. This is because the data contains information of African countries for not one year but multiple years. Each streak of data points may represent the longtitudinal data for the same country.
+
+```{r}
+#Scatterplot: life_expectancy ~ infant_mortality  
+ggplot(infan_life, aes(infant_mortality, life_expectancy)) + 
+  geom_point()
+
+#Scatterplot: life_expectancy ~ log(population)  
+ggplot(pop_life, aes(log(population), life_expectancy)) + 
+  geom_point()
+```
+
+4.  **More data processing**
+
+```{r}
+#Find which years have missing data for infant mortality
+africadata %>%
+  group_by(year) %>%
+  summarise(missing_n=sum(is.na(infant_mortality)))
+
+#Create africa_2000 which contains data for 2000 only
+africa_2000  <- 
+  africadata %>% 
+    filter(year==2000)
+#check structure and summary
+str(africa_2000) 
+summary(africa_2000)
+```
+
+5.  **More plotting**
+
+    Plot life expectancy as a function of infant mortality and as a function of population size using data from 2000.
+
+```{r}
+#Scatterplot for 2000: life_expectancy ~ infant_mortality  
+ggplot(africa_2000, aes(infant_mortality, life_expectancy)) + 
+  geom_point()
+
+#Scatterplot for 2000: life_expectancy ~ log(population)  
+ggplot(africa_2000, aes(log(population), life_expectancy)) + 
+  geom_point()
+```
+
+6.  **Simple model fits**
+
+    Fit simple linear models with lm() function in R. Model 1: life expectancy as the outcome, and infant mortality as the predictor; Model 2: life expectancy as the outcome, and population as the predictor. We found that infant mortality was positively and significantly associated with life expectancy (P-value\<.001), while population was not significantly associated with life expectancy (P-value=0.616) among African countries in 2000.
+
+    ```{r}
+    #Linear model: life expectancy ~ infant mortality
+    fit1<-lm(life_expectancy~infant_mortality, data=africa_2000)
+    summary(fit1)
+
+    #Linear model: life expectancy ~ population
+    fit2<-lm(life_expectancy~population, data=africa_2000)
+    summary(fit2)
+    ```
