@@ -56,7 +56,7 @@ summary(pop_life)
 
 ```         
 Plot life expectancy as a function of infant mortality and as a function of 
-population size.
+log(population size).
 
 ‘Streaks’ of data that seem to go together were observed from both 
 scatterplots. This is because the data contains information of African 
@@ -95,7 +95,7 @@ summary(africa_2000)
 
 ```         
 Plot life expectancy as a function of infant mortality and as a function of 
-population size using data from 2000.
+log(population size) using data from 2000.
 ```
 
 ```{r}
@@ -114,7 +114,7 @@ ggplot(africa_2000, aes(log(population), life_expectancy)) +
 Fit simple linear models with lm() function in R. Model 1: life expectancy 
 as the outcome, and infant mortality as the predictor; Model 2: life expectancy 
 as the outcome, and population as the predictor. We found that infant mortality 
-was positively and significantly associated with life expectancy (P-value\<.001), 
+was positively and significantly associated with life expectancy (P-value<.001), 
 while population was not significantly associated with life expectancy 
 (P-value=0.616) among African countries in 2000.
 ```
