@@ -21,9 +21,11 @@ class(gapminder)
 
 ## Processing data
 
-    Create africadata which contains countries in Africa. Create infan_life that 
-    contains infant_mortality and life_expectancy, and pop_life that contains 
-    population and life_expectancy.
+```         
+Create africadata which contains countries in Africa. Create infan_life that 
+contains infant_mortality and life_expectancy, and pop_life that contains 
+population and life_expectancy.
+```
 
 ```{r}
 #2-Processing data
@@ -52,13 +54,15 @@ summary(pop_life)
 
 ## Plotting:
 
-    Plot life expectancy as a function of infant mortality and as a function of 
-    population size.
+```         
+Plot life expectancy as a function of infant mortality and as a function of 
+population size.
 
-    ‘Streaks’ of data that seem to go together were observed from both 
-    scatterplots. This is because the data contains information of African 
-    countries for not one year but multiple years. Each streak of data points 
-    may represent the longtitudinal data for the same country.
+‘Streaks’ of data that seem to go together were observed from both 
+scatterplots. This is because the data contains information of African 
+countries for not one year but multiple years. Each streak of data points 
+may represent the longtitudinal data for the same country.
+```
 
 ```{r}
 #Scatterplot: life_expectancy ~ infant_mortality  
@@ -89,8 +93,10 @@ summary(africa_2000)
 
 ## More plotting
 
-    Plot life expectancy as a function of infant mortality and as a function of 
-    population size using data from 2000.
+```         
+Plot life expectancy as a function of infant mortality and as a function of 
+population size using data from 2000.
+```
 
 ```{r}
 #Scatterplot for 2000: life_expectancy ~ infant_mortality  
@@ -104,12 +110,14 @@ ggplot(africa_2000, aes(log(population), life_expectancy)) +
 
 ## Simple model fits
 
-    Fit simple linear models with lm() function in R. Model 1: life expectancy 
-    as the outcome, and infant mortality as the predictor; Model 2: life expectancy 
-    as the outcome, and population as the predictor. We found that infant mortality 
-    was positively and significantly associated with life expectancy (P-value\<.001), 
-    while population was not significantly associated with life expectancy 
-    (P-value=0.616) among African countries in 2000.
+```         
+Fit simple linear models with lm() function in R. Model 1: life expectancy 
+as the outcome, and infant mortality as the predictor; Model 2: life expectancy 
+as the outcome, and population as the predictor. We found that infant mortality 
+was positively and significantly associated with life expectancy (P-value\<.001), 
+while population was not significantly associated with life expectancy 
+(P-value=0.616) among African countries in 2000.
+```
 
 ```{r}
 #Linear model: life expectancy ~ infant mortality
@@ -120,3 +128,79 @@ summary(fit1)
 fit2<-lm(life_expectancy~population, data=africa_2000)
 summary(fit2)
 ```
+
+# **This section contributed by JANYNE**
+
+```{r}
+library("dslabs") #look at and play with data from dslabs package
+library("renv")
+library("tidyverse")
+library("modelr")
+library("ggplot2")
+```
+
+data is from greenhouse_gases; Greenhouse gas concentrations over 2000 years
+
+```{r}
+#look at help file for greenhouse_gases data
+help(greenhouse_gases)
+# get an overview of data structure
+str(greenhouse_gases)
+#get a summary of data
+summary(greenhouse_gases)
+#determine the type of object greenhouse_gases is
+class(greenhouse_gases)
+```
+
+## Step 1 Separate the three gases: CO2, CH4, N2O
+
+```{r}
+CO2 <- greenhouse_gases |> filter(gas=="CO2") |> select(year, concentration)
+summary(CO2)
+str(CO2)
+CH4 <- greenhouse_gases |> filter(gas=="CH4") |> select(year, concentration)
+summary(CH4)
+str(CH4)
+```
+
+## Step 2 Plot and compare the three gases over the years
+
+```{r}
+plot1 <- ggplot(CO2, aes(year, concentration)) + geom_point()
+plot2 <- ggplot(CH4, aes(year, concentration)) + geom_point()
+print(plot1)
+print(plot2)
+```
+
+### Step 3 Determine Average Africa population for the provided years
+
+```{r}
+avg_pop <- africadata |> select(population, year) |> group_by(year) |> mutate(avg = mean(population)) 
+summary(avg_pop)
+str(avg_pop)
+```
+
+## Step 4 Plot Population vs year
+
+```{r}
+plot3 <- ggplot(avg_pop, aes(year, avg)) + geom_point()
+print(plot3)
+```
+
+## Step 5 Filter the Gas data to include data greater than 1960
+
+```{r}
+CO2_a <- CO2 |> filter(year > 1940)
+CH4_a <- CH4 |> filter(year > 1940)
+summary(CO2_a)
+summary(CH4_a)
+
+plot4 <- ggplot(CO2_a, aes(year, concentration)) + geom_point()
+plot5 <- ggplot(CH4_a, aes(year, concentration)) + geom_point()
+print(plot3)
+print(plot4)
+print(plot5)
+
+```
+
+Comparing the population increase to the gas concentrations in the last 40 years. We can see as the average population increases there is an increase in greenhouse concentrations as well.
