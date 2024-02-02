@@ -1,0 +1,182 @@
+---
+title: "Data Exercise (Week 4)"
+---
+
+In this exercise, I chose the "stars" dataset from the "dslabs" package and selected 
+stars in the spectral classes of A/B/K/M. Based on selected data, I generated a 
+synthetic dataset which contained name, absolute magnitude, surface temperature, and 
+the spectral class of the star. With the synthetic data, I examined the relationships 
+between the variables. 
+
+## Load packages and data
+```{r}
+#Load packages 
+library("dslabs")
+library("tidyverse")
+library("gtsummary")
+library("parsnip")
+library("broom")
+
+table(stars$type)
+#Create dataset star_1 that contains stars from spectral classes of A/B/K/M, as only these classes have more than 10 stars, and change type into a factor variable
+star_1  <- 
+  stars %>% 
+    filter(type %in% c("A","B","K","M")) %>%
+      mutate(type=factor(type) )
+#preview star_1
+dplyr::glimpse(star_1) 
+```   
+Now we have an original dataset that contains 80 stars from the spectral classes of A/B/K/M. 
+We will create synthetic data based on this. 
+
+
+## Explore the original data before simulation
+We need to get some descriptive statistics and examine relationships between variables 
+in the original data.
+```{r}
+#Get descriptive statistics of variables
+gtsummary::tbl_summary(star_1[,c("magnitude","temp","type")], statistic = list(
+  all_continuous() ~ "{mean}/{median}/{min}/{max}/{sd}",
+  all_categorical() ~ "{n} / {N} ({p}%)"
+),)
+
+#Histograms of magnitude
+hist(star_1$magnitude)
+#Histograms of log(temperature)
+hist(log(star_1$temp))
+
+#Scatterplot: magnitude ~ log(temperature)  
+ggplot(star_1, aes(log(temp), magnitude)) + 
+  geom_point()
+
+#Boxplot: magnitude ~ type  
+ggplot(star_1, aes(type, magnitude)) + 
+  geom_boxplot()
+
+#Get mean and std of magnitude by type
+star_1 %>%
+  group_by(type) %>%
+  summarise_at(vars(magnitude), list(name = mean,sd))
+```
+Stars of type M have largest mean magnitude, while type B stars have the lowest magnitude.
+We will recreate this correlation in the synthetic data.
+
+## Create synthetic data 
+We will create synthetic data "star_s" based on the existing data "star_1". 
+Particularly, we will retain the correlation between magnitude and type. 
+```{r}
+# Set a seed for reproducibility
+set.seed(456)
+# Define the number of observations (stars) to generate
+n_stars <- 80
+# Create an empty data frame 
+star_s <- data.frame(
+  starID = numeric(n_stars),
+  magnitude = numeric(n_stars),
+  type = character(n_stars),
+  logtemp = numeric(n_stars)
+)
+
+# 1. generate star ID
+star_s$starID <- 1:n_stars
+
+# 2. generate log(temperature)
+# use uniform distribution as indicated by histogram of real data
+# use same min and max values as real data
+star_s$logtemp <- round(runif(n_stars, 
+                                     min = min(log(star_1$temp)), 
+                                     max = max(log(star_1$temp))), 1)
+
+# 3. generate type
+# create with probabilities based on real data distribution
+star_s$type <- sample(c("A", "B", "K","M"), 
+                                 n_stars, 
+                                 replace = TRUE,
+                                 prob = as.numeric(table(star_1$type)/100))
+
+# 4. generate magnitude
+# recreate the correlation between magnitude and type
+star_s$magnitude[star_s$type == "A"] <- round(rnorm(sum(star_s$type == "A"), mean = mean(star_1$magnitude[star_1$type == "A"]), sd = sd(star_1$magnitude[star_1$type == "A"])), 3)
+
+star_s$magnitude[star_s$type == "B"] <- round(rnorm(sum(star_s$type == "B"), mean = mean(star_1$magnitude[star_1$type == "B"]), sd = sd(star_1$magnitude[star_1$type == "B"])), 3)
+
+star_s$magnitude[star_s$type == "K"] <- round(rnorm(sum(star_s$type == "K"), mean = mean(star_1$magnitude[star_1$type == "K"]), sd = sd(star_1$magnitude[star_1$type == "K"])), 3)
+
+star_s$magnitude[star_s$type == "M"] <- round(rnorm(sum(star_s$type == "M"), mean = mean(star_1$magnitude[star_1$type == "M"]), sd = sd(star_1$magnitude[star_1$type == "M"])), 3)
+```  
+   
+## Check the synthetic data
+```{r}
+#Preview synthetic data
+head(star_s)
+summary(star_s)
+dplyr::glimpse(star_s) 
+
+#Histograms of magnitude
+hist(star_s$magnitude)
+#Histograms of log(temperature)
+hist(star_s$logtemp)
+
+#Boxplot: magnitude ~ type  
+ggplot(star_s, aes(type, magnitude)) + 
+  geom_boxplot()
+
+#Get mean and std of magnitude by type
+star_s %>%
+  group_by(type) %>%
+  summarise_at(vars(magnitude), list(name = mean,sd))
+```  
+   We can confirm that correlation between magnitude and type has been recreated in 
+   the synthetic data.
+   
+## Fit linear model with the synthetic data
+Fit a linear model to see whether the model recover the correlation between magnitude
+and type of the stars. 
+Model: magnitude = type + logtemp
+```{r}
+# Fit linear model 
+model <- linear_reg() %>%
+  set_engine("lm") %>%
+  parsnip::fit(magnitude ~ type + logtemp, data = star_s)
+broom::tidy(model)
+broom::glance(model)
+```     
+   Based on the results above, we can tell the linear model perfectly recovers the 
+   correlation between magnitude and type in the synthetic data. 
+   
+## Fit another linear model with interaction between type and log(temperature)
+Model: magnitude = type + logtemp + type*logtemp
+```{r}
+# Fit linear model 
+model2 <- linear_reg() %>%
+  set_engine("lm") %>%
+  parsnip::fit(magnitude ~ type + logtemp + type*logtemp, data = star_s)
+broom::tidy(model2)
+broom::glance(model2)
+```        
+   There is no significant interaction between magnitude and type. The model fit 
+   also drops a little. Thus, interaction term is not necessary. 
+   
+   
+   
+   
+   
+   
+   
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
