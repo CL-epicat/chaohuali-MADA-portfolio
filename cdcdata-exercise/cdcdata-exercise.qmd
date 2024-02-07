@@ -1,0 +1,116 @@
+---
+title: "CDC Data Exercise (Week 5)"
+subtitle: "Vaccine Hesitancy for COVID-19: County and local estimates"
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+The dataset of "Vaccine Hesitancy for COVID-19: County and local
+estimates" from <https://data.cdc.gov/> was used for this exercise. This
+dataset contains estimates of percentage of adults who had vaccine
+hesitancy, Social Vulnerability Index, and percentages of different
+races for all US counties. Because the complete dataset is over 150MB, I
+queried and exported the data for only the counties in Georgia. Details
+of the data can be found [here](#0){style="font-size: 11pt;"}.
+
+## Load packages and data
+
+```{r}
+#Load packages 
+library("readr")
+library("here")
+library("Hmisc")
+library("tidyverse")
+library("gtsummary")
+library("knitr")
+
+#read csv data
+vaccine <- read.csv(here("cdcdata-exercise", "Vaccine_Hesitancy_for_COVID-19__County_and_local_estimates_20240206.csv"))
+
+#preview dataset
+dplyr::glimpse(vaccine) 
+
+#create a new dataset that contains only the variables of interest
+vaccine_2  <- 
+  vaccine %>% 
+    mutate(SVI.Category=factor(SVI.Category) ) %>%
+    mutate(CVAC.Level.Of.Concern=factor(CVAC.Level.Of.Concern) ) %>%
+    select(FIPS.Code, Estimated.hesitant, Percent.Hispanic, Percent.non.Hispanic.Black, Percent.non.Hispanic.Asian, SVI.Category , CVAC.Level.Of.Concern)
+```
+
+Now, we have created a new dataset which includes only the variables of
+interest.
+
+*FIPS.Code*: id for counties
+
+*Estimated.hesitant*: Estimate of percentage of adults who describe
+themselves as “probably not” or “definitely not” going to get a COVID-19
+vaccine once one is available to them, based on national survey data
+
+*Percent.Hispanic:* Percent of county population that is Hispanic
+
+*Percent.non.Hispanic.Black:* Percent of county population that is
+non-Hispanic Black
+
+*Percent.non.Hispanic.Asian:* Percent of county population that is
+non-Hispanic Asian
+
+*SVI.Category*: SVI categorized as follows: Very Low (0.0-0.19), Low
+(0.20-0.39); Moderate (0.40-0.59); High (0.60-0.79); Very High
+(0.80-1.0)
+
+*CVAC.Level.Of.Concern*: CVAC categorized as follows: Very Low
+(0.0-0.19), Low (0.20-0.39); Moderate (0.40-0.59); High (0.60-0.79);
+Very High (0.80-1.0)
+
+## Explore and process data
+
+```{r}
+#inspect the summaries of the variables
+describe(vaccine_2)
+```
+
+From the results above, none of the variables have missing entries or
+unreasonable outliers. But we need to collapse some of the groups that
+have very small numbers for the two categorical variables.
+
+```{r}
+#collapse small groups for SVI.Category and CVAC.Level.Of.Concern 
+vaccine_2 <- vaccine_2 %>%
+  mutate(SVI.Category = case_when(
+    SVI.Category %in% c("Very Low Vulnerability", "Low Vulnerability") ~ "Low/Very Low",                            # combine Low and Very Low  
+    TRUE ~ SVI.Category   )) %>% # leave other categories unchanged
+    mutate(CVAC.Level.Of.Concern  = case_when(
+    CVAC.Level.Of.Concern  %in% c("Very Low Concern", "Low Concern", "Moderate Concern") ~ "Very Low/Low/Moderate",   # combine Very Low, Low and Moderate
+    TRUE ~ CVAC.Level.Of.Concern       # leave other categories unchanged
+  ))
+#check if recoding worked
+describe(vaccine_2)
+```
+
+Now, SVI.Category has 4 categories and CVAC.Level.Of.Concern has 3
+categories. The dataset is ready for analysis.
+
+## Table and figures showing distribution of variables
+
+```{r}
+#get descriptive statistics of variables and create a table
+ab<-gtsummary::tbl_summary(select(vaccine_2,-"FIPS.Code"), statistic = list(
+  all_continuous() ~ "{mean}/{sd}",
+  all_categorical() ~ "{n} / {N} ({p}%)"
+),)
+knitr::kable(ab,caption = "Summary Table: Mean/SD or n/N(%)")
+
+#Histograms of Estimated.hesitant
+hist(vaccine_2$Estimated.hesitant)
+#Histograms of Percent.Hispanic
+hist(vaccine_2$Percent.Hispanic)
+#Histograms of Percent.non.Hispanic.Black
+hist(vaccine_2$Percent.non.Hispanic.Black)
+#Histograms of Percent.non.Hispanic.Asian
+hist(vaccine_2$Percent.non.Hispanic.Asian	)
+```
+
+According to the histograms, we know none of the four continuous
+variables have normal distribution.
