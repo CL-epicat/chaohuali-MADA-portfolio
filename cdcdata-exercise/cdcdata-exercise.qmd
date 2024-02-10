@@ -216,5 +216,5 @@ hist(vaccine_2pk$Percent.non.Hispanic.Black)
 hist(vaccine_2pk$Percent.non.Hispanic.Asian	)
 ```
 
-The histograms show less skewed but at the same time they are not
+The histograms show less skewed distribution but at the same time they are not
 normally distributed. This is consistent with the histograms using dataframe vaccine_2
