@@ -45,7 +45,7 @@ interest.
 *FIPS.Code*: id for counties
 
 *Estimated.hesitant*: Estimate of percentage of adults who describe
-themselves as “probably not” or “definitely not” going to get a COVID-19
+themselves as "probably not" or "definitely not" going to get a COVID-19
 vaccine once one is available to them, based on national survey data
 
 *Percent.Hispanic:* Percent of county population that is Hispanic
@@ -114,3 +114,107 @@ hist(vaccine_2$Percent.non.Hispanic.Asian	)
 
 According to the histograms, we know none of the four continuous
 variables have normal distribution.
+
+## This section contributed by Patrick Kaggwa
+
+```{r}
+#Looking at the columns of vaccine2 before creating a synthetic dataset 
+colnames(vaccine_2)
+```
+
+After undertanding the description of the above dataframe, I used
+ChatGPT to create a new dataframe called vaccine_2pk with the same
+structure as vaccine_2.
+
+### ChatGPT prompt 
+
+Create a dataset that should consist of 159 observations and include the
+following variables: FIPS codes, Estimated hesitant values, Percent
+Hispanic values, Percent non-Hispanic Black values, Percent non-Hispanic
+Asian values, SVI Category, and CVAC Level of Concern. To ensure
+reproducibility, set the seed to 123 before generating random values.
+The FIPS codes should range from 13001 to 13159. The Estimated hesitant
+values should be uniformly distributed between 0.1049 and 0.188. Percent
+Hispanic values should range uniformly between 0.0014 and 0.3511.
+Percent non-Hispanic Black values should range uniformly between 0.0025
+and 0.7313. Percent non-Hispanic Asian values should range uniformly
+between 0 and 0.1291. The SVI Category should be sampled with
+replacement from 'High Vulnerability', 'Low/Very Low', 'Moderate
+Vulnerability', and 'Very High Vulnerability', with probabilities of
+31/159, 25/159, 21/159, and 82/159 respectively. Similarly, the CVAC
+Level of Concern should be sampled with replacement from 'High Concern',
+'Very High Concern', and 'Very Low/Low/Moderate', with probabilities of
+50/159, 77/159, and 32/159 respectively. Create a dataframe with these
+variables named 'vaccine_2pk.
+
+```{r}
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Generate FIPS codes
+FIPS.Code <- seq(13001, 13159)
+
+# Generate Estimated hesitant values
+Estimated.hesitant <- runif(159, min = 0.1049, max = 0.188)
+
+# Generate Percent Hispanic values
+Percent.Hispanic <- runif(159, min = 0.0014, max = 0.3511)
+
+# Generate Percent non-Hispanic Black values
+Percent.non.Hispanic.Black <- runif(159, min = 0.0025, max = 0.7313)
+
+# Generate Percent non-Hispanic Asian values
+Percent.non.Hispanic.Asian <- runif(159, min = 0, max = 0.1291)
+
+# Generate SVI Category with exact distribution
+SVI.Category <- sample(c("High Vulnerability", "Low/Very Low", "Moderate Vulnerability", "Very High Vulnerability"),
+                        159, replace = TRUE, prob = c(31/159, 25/159, 21/159, 82/159))
+
+# Generate CVAC Level of Concern
+CVAC.Level.Of.Concern <- sample(c("High Concern", "Very High Concern", "Very Low/Low/Moderate"),
+                                159, replace = TRUE, prob = c(50/159, 77/159, 32/159))
+
+# Create the dataframe
+vaccine_2pk <- data.frame(
+  FIPS.Code = FIPS.Code,
+  Estimated.hesitant = Estimated.hesitant,
+  Percent.Hispanic = Percent.Hispanic,
+  Percent.non.Hispanic.Black = Percent.non.Hispanic.Black,
+  Percent.non.Hispanic.Asian = Percent.non.Hispanic.Asian,
+  SVI.Category = SVI.Category,
+  CVAC.Level.Of.Concern = CVAC.Level.Of.Concern
+)
+
+# Print summary statistics for each variable
+summary(vaccine_2pk)
+
+
+
+```
+
+```{r}
+# I will desecribe the da
+describe(vaccine_2pk)
+```
+
+```{r}
+#get descriptive statistics of variables and create a table
+ab<-gtsummary::tbl_summary(select(vaccine_2pk,-"FIPS.Code"), statistic = list(
+  all_continuous() ~ "{mean}/{sd}",
+  all_categorical() ~ "{n} / {N} ({p}%)"
+),)
+knitr::kable(ab,caption = "Summary Table: Mean/SD or n/N(%)")
+
+#Histograms of Estimated.hesitant
+hist(vaccine_2pk$Estimated.hesitant)
+#Histograms of Percent.Hispanic
+hist(vaccine_2pk$Percent.Hispanic)
+#Histograms of Percent.non.Hispanic.Black
+hist(vaccine_2pk$Percent.non.Hispanic.Black)
+#Histograms of Percent.non.Hispanic.Asian
+hist(vaccine_2pk$Percent.non.Hispanic.Asian	)
+```
+
+The histograms show less skewed but at the same time they are not
+normally distributed. This is consistent with the histograms using dataframe vaccine_2
