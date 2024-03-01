@@ -155,6 +155,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../cdcdata-exercise/cdcdata-exercise.html">
  <span class="dropdown-text">CDC Data Exercise (Week 5)</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../fitting-exercise/fitting-exercise.html">
+ <span class="dropdown-text">Fitting Exercise (Week 8)</span></a>
+  </li>  
     </ul>
   </li>
 </ul>
@@ -235,14 +239,17 @@ Attaching package: 'Hmisc'</code></pre>
 ✖ dplyr::summarize() masks Hmisc::summarize()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"gtsummary"</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"knitr"</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co">#read csv data</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"cdcdata-exercise"</span>, <span class="st">"Vaccine_Hesitancy_for_COVID-19__County_and_local_estimates_20240206.csv"</span>))</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#preview dataset</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(vaccine) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"gtsummary"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>#BlackLivesMatter</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(<span class="st">"knitr"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#read csv data</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>vaccine <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"cdcdata-exercise"</span>, <span class="st">"Vaccine_Hesitancy_for_COVID-19__County_and_local_estimates_20240206.csv"</span>))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">#preview dataset</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>dplyr<span class="sc">::</span><span class="fu">glimpse</span>(vaccine) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 159
 Columns: 23
@@ -270,12 +277,12 @@ $ State.Boundary                                                   &lt;chr&gt; "
 $ States                                                           &lt;int&gt; 31, 3…
 $ Counties                                                         &lt;int&gt; 1611,…</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#create a new dataset that contains only the variables of interest</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>vaccine_2  <span class="ot">&lt;-</span> </span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  vaccine <span class="sc">%&gt;%</span> </span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">SVI.Category=</span><span class="fu">factor</span>(SVI.Category) ) <span class="sc">%&gt;%</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">CVAC.Level.Of.Concern=</span><span class="fu">factor</span>(CVAC.Level.Of.Concern) ) <span class="sc">%&gt;%</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(FIPS.Code, Estimated.hesitant, Percent.Hispanic, Percent.non.Hispanic.Black, Percent.non.Hispanic.Asian, SVI.Category , CVAC.Level.Of.Concern)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#create a new dataset that contains only the variables of interest</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>vaccine_2  <span class="ot">&lt;-</span> </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  vaccine <span class="sc">%&gt;%</span> </span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">SVI.Category=</span><span class="fu">factor</span>(SVI.Category) ) <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">CVAC.Level.Of.Concern=</span><span class="fu">factor</span>(CVAC.Level.Of.Concern) ) <span class="sc">%&gt;%</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(FIPS.Code, Estimated.hesitant, Percent.Hispanic, Percent.non.Hispanic.Black, Percent.non.Hispanic.Asian, SVI.Category , CVAC.Level.Of.Concern)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now, we have created a new dataset which includes only the variables of interest.</p>
 <p><em>FIPS.Code</em>: id for counties</p>
@@ -289,8 +296,8 @@ $ Counties                                                         &lt;int&gt; 1
 <section id="explore-and-process-data" class="level2">
 <h2 class="anchored" data-anchor-id="explore-and-process-data">Explore and process data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#inspect the summaries of the variables</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(vaccine_2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#inspect the summaries of the variables</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(vaccine_2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>vaccine_2 
 
@@ -360,17 +367,17 @@ Proportion             0.484             0.006
 </div>
 <p>From the results above, none of the variables have missing entries or unreasonable outliers. But we need to collapse some of the groups that have very small numbers for the two categorical variables.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse small groups for SVI.Category and CVAC.Level.Of.Concern </span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>vaccine_2 <span class="ot">&lt;-</span> vaccine_2 <span class="sc">%&gt;%</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SVI.Category =</span> <span class="fu">case_when</span>(</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    SVI.Category <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Very Low Vulnerability"</span>, <span class="st">"Low Vulnerability"</span>) <span class="sc">~</span> <span class="st">"Low/Very Low"</span>,                            <span class="co"># combine Low and Very Low  </span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> SVI.Category   )) <span class="sc">%&gt;%</span> <span class="co"># leave other categories unchanged</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">CVAC.Level.Of.Concern  =</span> <span class="fu">case_when</span>(</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    CVAC.Level.Of.Concern  <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Very Low Concern"</span>, <span class="st">"Low Concern"</span>, <span class="st">"Moderate Concern"</span>) <span class="sc">~</span> <span class="st">"Very Low/Low/Moderate"</span>,   <span class="co"># combine Very Low, Low and Moderate</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> CVAC.Level.Of.Concern       <span class="co"># leave other categories unchanged</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  ))</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co">#check if recoding worked</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(vaccine_2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#collapse small groups for SVI.Category and CVAC.Level.Of.Concern </span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>vaccine_2 <span class="ot">&lt;-</span> vaccine_2 <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">SVI.Category =</span> <span class="fu">case_when</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    SVI.Category <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Very Low Vulnerability"</span>, <span class="st">"Low Vulnerability"</span>) <span class="sc">~</span> <span class="st">"Low/Very Low"</span>,                            <span class="co"># combine Low and Very Low  </span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> SVI.Category   )) <span class="sc">%&gt;%</span> <span class="co"># leave other categories unchanged</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">CVAC.Level.Of.Concern  =</span> <span class="fu">case_when</span>(</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    CVAC.Level.Of.Concern  <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Very Low Concern"</span>, <span class="st">"Low Concern"</span>, <span class="st">"Moderate Concern"</span>) <span class="sc">~</span> <span class="st">"Very Low/Low/Moderate"</span>,   <span class="co"># combine Very Low, Low and Moderate</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> CVAC.Level.Of.Concern       <span class="co"># leave other categories unchanged</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">#check if recoding worked</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(vaccine_2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>vaccine_2 
 
@@ -443,12 +450,12 @@ Proportion                 0.314                 0.484                 0.201
 <section id="table-and-figures-showing-distribution-of-variables" class="level2">
 <h2 class="anchored" data-anchor-id="table-and-figures-showing-distribution-of-variables">Table and figures showing distribution of variables</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get descriptive statistics of variables and create a table</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>ab<span class="ot">&lt;-</span>gtsummary<span class="sc">::</span><span class="fu">tbl_summary</span>(<span class="fu">select</span>(vaccine_2,<span class="sc">-</span><span class="st">"FIPS.Code"</span>), <span class="at">statistic =</span> <span class="fu">list</span>(</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"{mean}/{sd}"</span>,</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">"{n} / {N} ({p}%)"</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>),)</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(ab,<span class="at">caption =</span> <span class="st">"Summary Table: Mean/SD or n/N(%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get descriptive statistics of variables and create a table</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>ab<span class="ot">&lt;-</span>gtsummary<span class="sc">::</span><span class="fu">tbl_summary</span>(<span class="fu">select</span>(vaccine_2,<span class="sc">-</span><span class="st">"FIPS.Code"</span>), <span class="at">statistic =</span> <span class="fu">list</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"{mean}/{sd}"</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">"{n} / {N} ({p}%)"</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>),)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(ab,<span class="at">caption =</span> <span class="st">"Summary Table: Mean/SD or n/N(%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <caption>Summary Table: Mean/SD or n/N(%)</caption>
@@ -514,8 +521,8 @@ Proportion                 0.314                 0.484                 0.201
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Estimated.hesitant</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Estimated.hesitant)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Estimated.hesitant</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Estimated.hesitant)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -523,8 +530,8 @@ Proportion                 0.314                 0.484                 0.201
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.Hispanic</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Percent.Hispanic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.Hispanic</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Percent.Hispanic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -532,8 +539,8 @@ Proportion                 0.314                 0.484                 0.201
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Black</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Percent.non.Hispanic.Black)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Black</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Percent.non.Hispanic.Black)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -541,8 +548,8 @@ Proportion                 0.314                 0.484                 0.201
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Asian</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Percent.non.Hispanic.Asian   )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Asian</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2<span class="sc">$</span>Percent.non.Hispanic.Asian   )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -556,8 +563,8 @@ Proportion                 0.314                 0.484                 0.201
 <section id="this-section-contributed-by-patrick-kaggwa" class="level2">
 <h2 class="anchored" data-anchor-id="this-section-contributed-by-patrick-kaggwa">This section contributed by Patrick Kaggwa</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Looking at the columns of vaccine2 before creating a synthetic dataset </span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(vaccine_2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Looking at the columns of vaccine2 before creating a synthetic dataset </span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(vaccine_2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "FIPS.Code"                  "Estimated.hesitant"        
 [3] "Percent.Hispanic"           "Percent.non.Hispanic.Black"
@@ -570,45 +577,45 @@ Proportion                 0.314                 0.484                 0.201
 <h3 class="anchored" data-anchor-id="chatgpt-prompt">ChatGPT prompt</h3>
 <p>Create a dataset that should consist of 159 observations and include the following variables: FIPS codes, Estimated hesitant values, Percent Hispanic values, Percent non-Hispanic Black values, Percent non-Hispanic Asian values, SVI Category, and CVAC Level of Concern. To ensure reproducibility, set the seed to 123 before generating random values. The FIPS codes should range from 13001 to 13159. The Estimated hesitant values should be uniformly distributed between 0.1049 and 0.188. Percent Hispanic values should range uniformly between 0.0014 and 0.3511. Percent non-Hispanic Black values should range uniformly between 0.0025 and 0.7313. Percent non-Hispanic Asian values should range uniformly between 0 and 0.1291. The SVI Category should be sampled with replacement from ‘High Vulnerability’, ‘Low/Very Low’, ‘Moderate Vulnerability’, and ‘Very High Vulnerability’, with probabilities of 31/159, 25/159, 21/159, and 82/159 respectively. Similarly, the CVAC Level of Concern should be sampled with replacement from ‘High Concern’, ‘Very High Concern’, and ‘Very Low/Low/Moderate’, with probabilities of 50/159, 77/159, and 32/159 respectively. Create a dataframe with these variables named ’vaccine_2pk.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate FIPS codes</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>FIPS.Code <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">13001</span>, <span class="dv">13159</span>)</span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Estimated hesitant values</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>Estimated.hesitant <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="fl">0.1049</span>, <span class="at">max =</span> <span class="fl">0.188</span>)</span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Percent Hispanic values</span></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>Percent.Hispanic <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="fl">0.0014</span>, <span class="at">max =</span> <span class="fl">0.3511</span>)</span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Percent non-Hispanic Black values</span></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>Percent.non.Hispanic.Black <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="fl">0.0025</span>, <span class="at">max =</span> <span class="fl">0.7313</span>)</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Percent non-Hispanic Asian values</span></span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>Percent.non.Hispanic.Asian <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="fl">0.1291</span>)</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate SVI Category with exact distribution</span></span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>SVI.Category <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"High Vulnerability"</span>, <span class="st">"Low/Very Low"</span>, <span class="st">"Moderate Vulnerability"</span>, <span class="st">"Very High Vulnerability"</span>),</span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>                        <span class="dv">159</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="dv">31</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">25</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">21</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">82</span><span class="sc">/</span><span class="dv">159</span>))</span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate CVAC Level of Concern</span></span>
-<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>CVAC.Level.Of.Concern <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"High Concern"</span>, <span class="st">"Very High Concern"</span>, <span class="st">"Very Low/Low/Moderate"</span>),</span>
-<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>                                <span class="dv">159</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="dv">50</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">77</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">32</span><span class="sc">/</span><span class="dv">159</span>))</span>
-<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the dataframe</span></span>
-<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>vaccine_2pk <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">FIPS.Code =</span> FIPS.Code,</span>
-<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimated.hesitant =</span> Estimated.hesitant,</span>
-<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">Percent.Hispanic =</span> Percent.Hispanic,</span>
-<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">Percent.non.Hispanic.Black =</span> Percent.non.Hispanic.Black,</span>
-<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">Percent.non.Hispanic.Asian =</span> Percent.non.Hispanic.Asian,</span>
-<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">SVI.Category =</span> SVI.Category,</span>
-<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">CVAC.Level.Of.Concern =</span> CVAC.Level.Of.Concern</span>
-<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary statistics for each variable</span></span>
-<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vaccine_2pk)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate FIPS codes</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>FIPS.Code <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">13001</span>, <span class="dv">13159</span>)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Estimated hesitant values</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>Estimated.hesitant <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="fl">0.1049</span>, <span class="at">max =</span> <span class="fl">0.188</span>)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Percent Hispanic values</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>Percent.Hispanic <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="fl">0.0014</span>, <span class="at">max =</span> <span class="fl">0.3511</span>)</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Percent non-Hispanic Black values</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>Percent.non.Hispanic.Black <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="fl">0.0025</span>, <span class="at">max =</span> <span class="fl">0.7313</span>)</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate Percent non-Hispanic Asian values</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>Percent.non.Hispanic.Asian <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">159</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="fl">0.1291</span>)</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate SVI Category with exact distribution</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>SVI.Category <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"High Vulnerability"</span>, <span class="st">"Low/Very Low"</span>, <span class="st">"Moderate Vulnerability"</span>, <span class="st">"Very High Vulnerability"</span>),</span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>                        <span class="dv">159</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="dv">31</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">25</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">21</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">82</span><span class="sc">/</span><span class="dv">159</span>))</span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate CVAC Level of Concern</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>CVAC.Level.Of.Concern <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"High Concern"</span>, <span class="st">"Very High Concern"</span>, <span class="st">"Very Low/Low/Moderate"</span>),</span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>                                <span class="dv">159</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="dv">50</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">77</span><span class="sc">/</span><span class="dv">159</span>, <span class="dv">32</span><span class="sc">/</span><span class="dv">159</span>))</span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-27"><a href="#cb25-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the dataframe</span></span>
+<span id="cb25-28"><a href="#cb25-28" aria-hidden="true" tabindex="-1"></a>vaccine_2pk <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb25-29"><a href="#cb25-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">FIPS.Code =</span> FIPS.Code,</span>
+<span id="cb25-30"><a href="#cb25-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">Estimated.hesitant =</span> Estimated.hesitant,</span>
+<span id="cb25-31"><a href="#cb25-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">Percent.Hispanic =</span> Percent.Hispanic,</span>
+<span id="cb25-32"><a href="#cb25-32" aria-hidden="true" tabindex="-1"></a>  <span class="at">Percent.non.Hispanic.Black =</span> Percent.non.Hispanic.Black,</span>
+<span id="cb25-33"><a href="#cb25-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">Percent.non.Hispanic.Asian =</span> Percent.non.Hispanic.Asian,</span>
+<span id="cb25-34"><a href="#cb25-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">SVI.Category =</span> SVI.Category,</span>
+<span id="cb25-35"><a href="#cb25-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">CVAC.Level.Of.Concern =</span> CVAC.Level.Of.Concern</span>
+<span id="cb25-36"><a href="#cb25-36" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb25-37"><a href="#cb25-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-38"><a href="#cb25-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Print summary statistics for each variable</span></span>
+<span id="cb25-39"><a href="#cb25-39" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vaccine_2pk)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   FIPS.Code     Estimated.hesitant Percent.Hispanic  
  Min.   :13001   Min.   :0.1050     Min.   :0.003603  
@@ -634,8 +641,8 @@ Proportion                 0.314                 0.484                 0.201
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># I will desecribe the da</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(vaccine_2pk)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># I will desecribe the da</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">describe</span>(vaccine_2pk)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>vaccine_2pk 
 
@@ -708,12 +715,12 @@ Proportion                 0.358                 0.472                 0.170
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get descriptive statistics of variables and create a table</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>ab<span class="ot">&lt;-</span>gtsummary<span class="sc">::</span><span class="fu">tbl_summary</span>(<span class="fu">select</span>(vaccine_2pk,<span class="sc">-</span><span class="st">"FIPS.Code"</span>), <span class="at">statistic =</span> <span class="fu">list</span>(</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"{mean}/{sd}"</span>,</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">"{n} / {N} ({p}%)"</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>),)</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(ab,<span class="at">caption =</span> <span class="st">"Summary Table: Mean/SD or n/N(%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#get descriptive statistics of variables and create a table</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>ab<span class="ot">&lt;-</span>gtsummary<span class="sc">::</span><span class="fu">tbl_summary</span>(<span class="fu">select</span>(vaccine_2pk,<span class="sc">-</span><span class="st">"FIPS.Code"</span>), <span class="at">statistic =</span> <span class="fu">list</span>(</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_continuous</span>() <span class="sc">~</span> <span class="st">"{mean}/{sd}"</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all_categorical</span>() <span class="sc">~</span> <span class="st">"{n} / {N} ({p}%)"</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>),)</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(ab,<span class="at">caption =</span> <span class="st">"Summary Table: Mean/SD or n/N(%)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <caption>Summary Table: Mean/SD or n/N(%)</caption>
@@ -779,8 +786,8 @@ Proportion                 0.358                 0.472                 0.170
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Estimated.hesitant</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Estimated.hesitant)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Estimated.hesitant</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Estimated.hesitant)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -788,8 +795,8 @@ Proportion                 0.358                 0.472                 0.170
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.Hispanic</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Percent.Hispanic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.Hispanic</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Percent.Hispanic)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -797,8 +804,8 @@ Proportion                 0.358                 0.472                 0.170
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Black</span></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Percent.non.Hispanic.Black)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Black</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Percent.non.Hispanic.Black)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -806,8 +813,8 @@ Proportion                 0.358                 0.472                 0.170
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Asian</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Percent.non.Hispanic.Asian )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Histograms of Percent.non.Hispanic.Asian</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(vaccine_2pk<span class="sc">$</span>Percent.non.Hispanic.Asian )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">

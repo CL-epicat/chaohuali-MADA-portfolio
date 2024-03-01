@@ -1,0 +1,292 @@
+---
+title: "Fitting Exercise (Week 8)"
+---
+
+## Data processing and exploration
+
+Load packages and data
+```{r}
+#Load packages 
+library(here)
+library(tidyverse)
+library(gtsummary)
+library(knitr)
+library(tidymodels) 
+library(yardstick)
+library(pROC)
+
+#read csv data
+drug <- read.csv(here("fitting-exercise", "Mavoglurant_A2121_nmpk.csv"))
+
+#preview dataset
+dplyr::glimpse(drug) 
+```
+
+
+Make a plot that shows a line for each individual, with DV on the y-axis and time on the x-axis. 
+Stratify by dose.
+```{r}
+#spaghetti plot 
+ggplot(drug, aes(x = TIME, y = DV, group = ID, color = factor(DOSE))) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Spaghetti Plot of DV over TIME Stratified by DOSE",
+       x = "TIME",
+       y = "DV",
+       color = "DOSE")
+```
+
+Very hard to tell the differences in the trajectory of DV across the DOSE groups,
+try log-transforming DV and remake the plot.
+```{r}
+ggplot(drug, aes(x = TIME, y = log(DV), group = ID, color = factor(DOSE))) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Spaghetti Plot of log(DV) over TIME Stratified by DOSE",
+       x = "TIME",
+       y = "DV",
+       color = "DOSE")
+```
+It looks like DV decreases faster over time among those from DOSE 25. 
+
+
+Keeps only observations with OCC = 1.
+```{r}
+drug2<-drug[drug$OCC==1,]
+```
+
+
+Create a data frame of size 120 x 18 which excludes the observations with TIME = 0 
+and contains variable Y (total amount of drug for each individual).
+```{r}
+#create a new data frame that contains only observations with TIME = 0 
+drug3<-drug2[drug2$TIME == 0,]
+
+#exlude observations with TIME = 0 then compute the sum of the DV variable for each individual using dplyr::summarize()
+sum_dv <- drug2 %>%
+  filter(TIME != 0) %>%
+  group_by(ID) %>%
+  summarize(Y = sum(DV))
+
+#merge the two data frames above
+merged_drug <- left_join(drug3, sum_dv, by = "ID")
+```
+
+
+Converts RACE, SEX and DOSE to factor variables and keeps variables Y,DOSE,AGE,SEX,RACE,WT,HT.
+```{r}
+merged_drug2<-merged_drug %>%
+  mutate(RACE=factor(RACE),
+         SEX=factor(SEX),
+         DOSE=factor(DOSE)) %>%
+  select(Y,DOSE,AGE,SEX,RACE,WT,HT)
+
+#preview new data frame
+dplyr::glimpse(merged_drug2) 
+```
+
+
+## EDA revisited
+
+Make a descriptive table of the variables
+```{r}
+#get descriptive statistics of variables and create a table
+table1<-gtsummary::tbl_summary(merged_drug2, statistic = list(
+  all_continuous() ~ "{mean}/{sd}",
+  all_categorical() ~ "{n} / {N} ({p}%)"
+),)
+knitr::kable(table1,caption = "Summary Table: Mean/SD or n/N(%)")
+```
+The majority of the cohort are of DOSE 25, SEX 1,and Race 1.
+
+
+Make scatterplots between Y and continuous predictors (AGE, WT, HT)
+```{r}
+#Scatterplot: Y ~ AGE  
+ggplot(merged_drug2, aes(AGE, Y)) + 
+  geom_point()
+
+#Scatterplot: Y ~ WT  
+ggplot(merged_drug2, aes(WT, Y)) + 
+  geom_point()
+
+#Scatterplot: Y ~ HT  
+ggplot(merged_drug2, aes(HT, Y)) + 
+  geom_point()
+```
+No obvious linear associations observed between Y and AGE, WT, HT.
+
+
+Make boxplots between Y and categorical predictors (DOSE, SEX, RACE)
+```{r}
+#Boxplot: Y ~ DOSE  
+ggplot(merged_drug2, aes(factor(DOSE), Y)) + 
+  geom_boxplot()
+
+#Boxplot: Y ~ SEX  
+ggplot(merged_drug2, aes(SEX, Y)) + 
+  geom_boxplot()
+
+#Boxplot: Y ~ RACE  
+ggplot(merged_drug2, aes(RACE, Y)) + 
+  geom_boxplot()
+```
+Individuals of different RACE groups or SEX groups have similar average value of Y.
+There seems to be a positive association between Y and DOSE.
+
+
+Make histograms for variables Y,AGE, WT, HT.
+```{r}
+#histogram for Y  
+hist(merged_drug2$Y)
+
+#histogram for AGE  
+hist(merged_drug2$AGE)
+
+#histogram for WT  
+hist(merged_drug2$WT)
+
+#histogram for HT.  
+hist(merged_drug2$HT)
+```
+These variables have a generally normal distribution. No obvious outliers are observed. 
+
+
+Make scatterplot matrix for variables Y,AGE, WT, HT to inspect correlations.
+```{r}
+pairs(merged_drug2[, c("Y", "AGE", "WT", "HT")], main = "Scatter Plot Matrix for Y,AGE, WT, HT")
+```
+WT and HT have relatively high correlation. 
+
+
+Save the clean data frame locally
+```{r}
+saveRDS(merged_drug2, file =  here("fitting-exercise", "merged_drug2.rds"))
+```
+
+## Model fitting
+
+Fit a linear model to the continuous outcome (Y) using the main predictor of interest DOSE,
+and calculate RMSE and R-squared.
+```{r}
+#fit linear model: Y~DOSE
+model1 <- lm(Y ~ DOSE, data = merged_drug2)
+summary(model1)
+
+# make predictions on the original data
+predictions1 <- predict(model1, newdata = merged_drug2)
+
+# Compute RMSE and R-squared
+rmse_1 <- rmse_vec(merged_drug2$Y, predictions1)
+rsquared_1 <- rsq_vec(merged_drug2$Y, predictions1)
+
+# print RMSE and R-squared
+cat("RMSE:", rmse_1, "\n")
+cat("R-squared:", rsquared_1, "\n")
+```
+Y of DOSE 37.5 (p-value=0.002) and Y of DOSE 50 (p-value<.001) are significantly higher 
+than Y of DOSE 25. RMSE is 666.3, and R-squared is 0.516. 
+
+
+Fit a linear model to the continuous outcome (Y) using the all predictor,and calculate 
+RMSE and R-squared.
+```{r}
+#fit linear model: Y~DOSE+AGE+SEX+RACE+WT+HT
+model2 <- lm(Y ~ DOSE+AGE+SEX+RACE+WT+HT, data = merged_drug2)
+summary(model2)
+
+# make predictions on the original data
+predictions2 <- predict(model2, newdata = merged_drug2)
+
+# Compute RMSE and R-squared
+rmse_2 <- rmse_vec(merged_drug2$Y, predictions2)
+rsquared_2 <- rsq_vec(merged_drug2$Y, predictions2)
+
+# print RMSE and R-squared
+cat("RMSE:", rmse_2, "\n")
+cat("R-squared:", rsquared_2, "\n")
+```
+After adjusting for covariates, Y of DOSE 37.5 (p-value=0.001) and Y of DOSE 50 
+(p-value<.001) are significantly higher than Y of DOSE 25. One unit increase in WT (p-value<.001) 
+is significantly associated with a decrease of 23.3 in Y. Other covariates are not 
+significantly associated with Y. RMSE is 590.3, and R-squared is 0.62. This model 
+has better fit than the model with only DOSE as predictor.
+
+
+
+Fit a logistic model to the SEX using the main predictor DOSE,and calculate 
+accuracy and ROC-AUC.
+```{r}
+# fit logistic model: SEX~DOSE
+logistic_model <- logistic_reg(mode = "classification") %>%
+  set_engine("glm") %>%
+  set_mode("classification")
+
+model3 <- logistic_model %>% 
+  fit(SEX ~ DOSE, data = merged_drug2)
+
+#calculate odds ratios
+model_estimates <- tidy(model3, conf.int = TRUE)
+model_estimates$odds_ratio <- exp(model_estimates$estimate)
+
+# display model estimates and odds ratios
+print(model_estimates[, c("term", "estimate", "conf.low", "conf.high", "odds_ratio","p.value")])
+
+
+# Make predictions on the original data
+prediction3 <- predict(model3, new_data = merged_drug2)
+prediction3$SEX<-merged_drug2$SEX
+
+# Compute accuracy
+accuracy_value3 <- accuracy(prediction3, truth = SEX, estimate = .pred_class)
+
+# Compute AUC
+roc_curve3 <- roc(as.numeric(prediction3$SEX),as.numeric( prediction3$.pred_class))
+auc_value3 <- auc(roc_curve3)
+
+# Print accuracy and AUC
+cat("Accuracy:", accuracy_value3$.estimate, "\n")
+cat("AUC:", auc_value3, "\n")
+```
+There is no significant association between DOSE and SEX. The accuracy of the model 
+is 0.867 and the AUC is 0.5. 
+
+
+
+Fit a logistic model to the SEX using the main predictor DOSE,and calculate 
+accuracy and ROC-AUC.
+```{r}
+# fit logistic model: SEX~DOSE
+logistic_model <- logistic_reg(mode = "classification") %>%
+  set_engine("glm") %>%
+  set_mode("classification")
+
+model4 <- logistic_model %>% 
+  fit(SEX ~ DOSE + Y + AGE + HT + WT + RACE, data = merged_drug2)
+
+#calculate odds ratios
+model_estimates <- tidy(model4, conf.int = TRUE)
+model_estimates$odds_ratio <- exp(model_estimates$estimate)
+
+# display model estimates and odds ratios
+print(model_estimates[, c("term", "estimate", "conf.low", "conf.high", "odds_ratio","p.value")])
+
+
+# Make predictions on the original data
+prediction4 <- predict(model4, new_data = merged_drug2)
+prediction4$SEX<-merged_drug2$SEX
+
+# Compute accuracy
+accuracy_value4 <- accuracy(prediction4, truth = SEX, estimate = .pred_class)
+
+# Compute AUC
+roc_curve4 <- roc(as.numeric(prediction4$SEX),as.numeric( prediction4$.pred_class))
+auc_value4 <- auc(roc_curve4)
+
+# Print accuracy and AUC
+cat("Accuracy:", accuracy_value4$.estimate, "\n")
+cat("AUC:", auc_value4, "\n")
+```
+There is still no significant association between DOSE and SEX. Only HT is significantly
+associated with SEX. The accuracy of the model is 0.958 and the AUC is 0.897. This model 
+has better fit than the model with only DOSE as predictor. 

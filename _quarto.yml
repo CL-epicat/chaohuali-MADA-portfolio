@@ -22,6 +22,8 @@ website:
             file: data-exercise/data-exercise.qmd
           - text: "CDC Data Exercise (Week 5)"
             file: cdcdata-exercise/cdcdata-exercise.qmd
+          - text: "Fitting Exercise (Week 8)"
+            file: fitting-exercise/fitting-exercise.qmd
     right:
       - icon: github 
         href: https://github.com/CL-epicat/chaohuali-MADA-portfolio       
