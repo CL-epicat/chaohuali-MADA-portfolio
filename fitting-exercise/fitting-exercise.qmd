@@ -290,3 +290,187 @@ cat("AUC:", auc_value4, "\n")
 There is still no significant association between DOSE and SEX. Only HT is significantly
 associated with SEX. The accuracy of the model is 0.958 and the AUC is 0.897. This model 
 has better fit than the model with only DOSE as predictor. 
+
+
+
+
+# Module 10. Model Improvement - Part 1
+
+# Data prep 
+Remove variable RACE, and set the seed to 1234.
+
+```{r}
+#save a seed value
+rngseed = 1234
+
+#read previously saved rds data
+module10<-readRDS( here("fitting-exercise", "merged_drug2.rds"))
+#remove RACE 
+module10 <- subset(module10, select = -RACE)
+
+#set the seed
+set.seed(rngseed)
+
+#splits the dataset randomly into a 75% train and 25% test set
+data_split <- initial_split(module10, prop = 3/4)
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+```
+
+
+# Model Fitting
+Fit two linear models with Y as outcome, and only DOSE or all variables as predictors, respectively. 
+
+```{r}
+#linear models with Y as outcome, DOSE as the only predictor
+lin_mod <- linear_reg() %>% set_engine("lm")
+linfit1 <- lin_mod %>% fit(Y ~ DOSE, data = train_data)
+#linear model with Y as outcome, all variables as predictors
+linfit2 <- lin_mod %>% fit(Y ~ ., data = train_data)
+```
+
+# Model performance assessment 1
+
+```{r}
+#RMSE for model 1
+metrics_1 <- linfit1 %>% 
+  predict(train_data) %>% 
+  bind_cols(train_data) %>% 
+  metrics(truth = Y, estimate = .pred) 
+
+print(metrics_1)
+```
+RMSE when only DOSE as predictor is 702.7909349. 
+
+```{r}
+#RMSE for model 2
+metrics_2 <- linfit2 %>% 
+  predict(train_data) %>% 
+  bind_cols(train_data) %>% 
+  metrics(truth = Y, estimate = .pred)
+
+print(metrics_2)
+```
+RMSE when all variables as predictors is 627.2723963.
+
+```{r}
+#Manually calculate RMSE for null model
+meanY<-mean(train_data$Y)
+RSS<-sum((train_data$Y-meanY)^2)
+RMSE_null<-sqrt(RSS/nrow(train_data))
+print(RMSE_null)
+```
+RMSE for the null model is 948.3526.
+
+# Model performance assessment 2
+Rerun the two models with 10-fold cross-validation. Compute RMSE and standard error of the RMSE.
+
+```{r}
+#reset the seed
+set.seed(rngseed)
+
+#10 folder Cross-validation
+folds <- vfold_cv(train_data, v = 10)
+
+#create work flow 1
+rf_wf1 <- 
+  workflow() %>%
+  add_model(linear_reg()) %>%
+  add_formula(Y ~ DOSE)
+
+#Fit model 1 with only DOSE as predictor
+set.seed(rngseed)
+rf_fit_rs1 <- 
+  rf_wf1 %>% 
+  fit_resamples(folds)
+
+collect_metrics(rf_fit_rs1)
+```
+RMSE using 10-fold CV when only DOSE as predictor is 696.7097763, standard error of RMSE is 68.09510508.  
+
+
+```{r}
+#reset the seed
+set.seed(rngseed)
+
+#10 folder Cross-validation
+folds <- vfold_cv(train_data, v = 10)
+
+#create work flow 2
+rf_wf2 <- 
+  workflow() %>%
+  add_model(linear_reg()) %>%
+  add_formula(Y ~ .)
+
+#Fit model 2 with all variables as predictors
+set.seed(rngseed)
+rf_fit_rs2 <- 
+  rf_wf2 %>% 
+  fit_resamples(folds)
+
+collect_metrics(rf_fit_rs2)
+
+```
+RMSE using 10-fold CV when all variables as predictors is 652.7738843, standard error of RMSE is 63.59876238.  
+Comparing RMSE using 10-folder CV to the RMSE early, the RMSE for model 1 decreased (from 702.8 to 696.8), the RMSE for model 2 increased (from 627.3 to 652.8). The RMSE for the model with DOSE as only predictor is still higher than that of the model with all variables as predictors. This indicates that the model with all variables still has better performance than the one with DOSE only; and the model with DOSE only has better performance than the null model. 
+
+# Rerun the cross-validation with a different seed
+
+```{r}
+#Rerun model 1 with a different seed
+#different seed 
+seed2 = 8876
+
+#reset the seed
+set.seed(seed2)
+
+#10 folder Cross-validation
+folds <- vfold_cv(train_data, v = 10)
+
+#create work flow 1
+rf_wf1b <- 
+  workflow() %>%
+  add_model(linear_reg()) %>%
+  add_formula(Y ~ DOSE)
+
+#Fit model 1 with only DOSE as predictor
+set.seed(seed2)
+rf_fit_rs1b <- 
+  rf_wf1b %>% 
+  fit_resamples(folds)
+
+collect_metrics(rf_fit_rs1b)
+
+```
+With a different seed, RMSE using 10-fold CV when only DOSE as predictor is 714.5896655, standard error of RMSE is 34.92669480.
+
+
+```{r}
+#Rerun model 2 with a different seed
+#reset the seed
+set.seed(seed2)
+
+#10 folder Cross-validation
+folds <- vfold_cv(train_data, v = 10)
+
+#create work flow 2
+rf_wf2b <- 
+  workflow() %>%
+  add_model(linear_reg()) %>%
+  add_formula(Y ~ .)
+
+#Fit model 1 with only DOSE as predictor
+set.seed(seed2)
+rf_fit_rs2b <- 
+  rf_wf2b %>% 
+  fit_resamples(folds)
+
+collect_metrics(rf_fit_rs2b)
+```
+With a different seed, RMSE using 10-fold CV when all variables as predictors is 655.797776, standard error of RMSE is 54.67215006.
+
+The overall pattern between changes in the RMSE for the models trained without CV and the models trained with CV is the same. Model with all variables still performs better than the model with DOSE only. 
+
+
+
+
