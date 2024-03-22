@@ -471,6 +471,202 @@ With a different seed, RMSE using 10-fold CV when all variables as predictors is
 
 The overall pattern between changes in the RMSE for the models trained without CV and the models trained with CV is the same. Model with all variables still performs better than the model with DOSE only. 
 
+---
 
+## This section added by Liza Hall 
 
+\
+
+### Model Predictions
+#### Predicted Values VS Observed Values
+Load necessecary libraries
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+```
+
+Generate predictions for both models.
+
+```{r}
+# Prediction for Model 1 (DOSE as predictor)
+pred1 <- predict(linfit1, train_data) %>%
+  bind_cols(train_data) %>%
+  select(Y, .pred) %>%
+  mutate(model = "DOSE Only")
+
+# Prediction for Model 2 (All variables as predictors)
+pred2 <- predict(linfit2, train_data) %>%
+  bind_cols(train_data) %>%
+  select(Y, .pred) %>%
+  mutate(model = "All Predictors")
+```
+
+Manually create predictions for null model based on the mean.
+
+```{r}
+# Prediction for Null Model (mean prediction)
+train_data$null_pred <- meanY # meanY calculated previously as mean(train_data$Y)
+null_model_pred <- train_data %>%
+  select(Y, null_pred) %>%
+  rename(.pred = null_pred) %>%
+  mutate(model = "Null Model")
+```
+
+Combine all predictions into one dataset. 
+
+```{r}
+# Combine all predictions into one data frame
+combined_predictions <- bind_rows(pred1, pred2, null_model_pred)
+```
+
+Plotting the graph with ggplot.
+
+```{r, warning=FALSE}
+# Plotting with ggplot
+ggplot(combined_predictions, aes(x = Y, y = .pred, color = model)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray") + # 45 degree line
+  scale_x_continuous(limits = c(0, 5000)) +
+  scale_y_continuous(limits = c(0, 5000)) +
+  labs(x = "Observed", y = "Predicted", title = "Observed vs. Predicted Values") +
+  theme_minimal() +
+  scale_color_manual(values = c("DOSE Only" = "#5c88da", "All Predictors" = "#84bd00", "Null Model" = "#ffcd00")) +
+  theme(
+    plot.background = element_rect(fill = "gray99", color = NA), # Change the entire plot background
+    panel.background = element_rect(fill = "gray99", color = NA) # Change the plotting area background
+  )
+```
+
+#### Predicted Values VS Residuals
+
+Calculate residuals for model 2.
+
+```{r}
+# Calculate residuals for Model 2
+model2_residuals <- pred2 %>%
+  mutate(residuals = .pred - Y)
+```
+
+Finding the range for the Y-axis.
+\
+This ensures it goes into the positive and negative by the same amount.
+
+```{r}
+# Finding the range for Y-axis to ensure it goes the same amount into positive and negative direction
+max_abs_residual <- max(abs(model2_residuals$residuals))
+```
+
+Plotting the graph with ggplot.
+
+```{r}
+# Plotting Predicted vs. Residuals for Model 2
+ggplot(model2_residuals, aes(x = .pred, y = residuals)) +
+  geom_point(colour="#5c88da") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") + # Straight line at 0
+  scale_y_continuous(limits = c(-max_abs_residual, max_abs_residual)) + # Same amount in positive and negative direction
+  labs(x = "Predicted", y = "Residuals", title = "Predicted vs. Residuals for All Predictors Model") +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "gray99", color = NA), # Change the entire plot background
+    panel.background = element_rect(fill = "gray99", color = NA) # Change the plotting area background
+  )
+```
+
+### Model Predictions and Uncertainty
+
+\
+
+#### Predicted Values VS Observed Values
+
+Load required libraries.
+```{r}
+library(rsample)
+```
+
+Set seed and create bootstraps.
+
+```{r}
+set.seed(rngseed)
+
+dat_bs <- bootstraps(train_data, times = 100)
+```
+
+Initialize list to store predictions, then loop over bootstrap samples and store predcitions in list. Also, assigning original predictions to 'orig_pred' for easier managment. 
+
+```{r, warning=FALSE}
+# Initialize a list to store predictions
+pred_bs <- list()
+
+# Loop over each bootstrap sample in 'dat_bs'
+for(i in 1:length(dat_bs$splits)) {
+ 
+  # Extract the bootstrap sample
+  dat_sample = rsample::analysis(dat_bs$splits[[i]])
+  
+  # Fit the model to the bootstrap sample 
+  linfit2 <- lin_mod %>% fit(Y ~ ., data = dat_sample)
+  
+  # Make predictions on the original training data
+  predictions <- predict(linfit2, new_data = train_data)
+  
+  # Store predictions
+  pred_bs[[i]] <- predictions
+}
+
+# Assigning original predictions 
+orig_pred <- pred2$.pred
+```
+
+Convert vector list into matrix. Then the mean, lower CI, and upper CI are calculated for each row of bootstrap samples. After this is done, the values are assigned to 'train_data' for plotting. 
+
+```{r}
+# Convert the list of vectors into a matrix
+pred_matrix <- do.call(cbind, pred_bs)
+
+# Calculate the median, lower CI, and upper CI for each row across bootstrap samples
+preds <- apply(pred_matrix, 1, function(x) quantile(x, probs = c(0.025, 0.5, 0.975)))
+preds <- t(preds) 
+
+# Assign
+train_data$median_pred <- preds[, 2] # Median
+train_data$lower_ci <- preds[, 1] # Lower CI
+train_data$upper_ci <- preds[, 3] # Upper CI
+```
+
+Plotting the graph. 
+
+```{r}
+# Plotting
+ggplot(train_data, aes(x = Y)) +
+  geom_point(aes(y = orig_pred, color = "Original Predictions"), size = 1.5) +
+  geom_point(aes(y = median_pred, color = "Median Predictions"), size = 1.5) +
+  geom_errorbar(aes(ymin = lower_ci, ymax = upper_ci, color = "Confidence Intervals"), width = 0.2, alpha = 0.8) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray") +
+  scale_x_continuous(limits = c(0, max(train_data$Y))) +
+  scale_y_continuous(limits = c(0, max(c(train_data$orig_pred, train_data$upper_ci)))) +
+  labs(x = "Observed Values", y = "Predicted Values with Confidence Intervals", 
+       title = "Observed Values vs. Predicted Values with Confidence Intervals") +
+  scale_color_manual(values = c("Original Predictions" = "#84bd00",
+                                "Median Predictions" = "#5c88da",
+                                "Confidence Intervals" = "#ffcd00")) +
+  theme_minimal() +
+   theme(
+    plot.background = element_rect(fill = "gray99", color = NA), # Change the entire plot background
+    panel.background = element_rect(fill = "gray99", color = NA) # Change the plotting area background
+  ) +
+  guides(color = guide_legend(title = "Legend")) +
+  theme(legend.position = "right", 
+        legend.text = element_text(size = 8), 
+        legend.title = element_text(size = 9), 
+        legend.key.size = unit(0.5, "cm"), 
+        legend.spacing.x = unit(0.2, "cm"), 
+        legend.spacing.y = unit(0.1, "cm")) 
+```
+
+\
+
+#### Interpretation 
+
+As seen in the graph above, the points on the graph are relatively close to the line of perfect fit, which suggests that the model's predictions are reasonably accurate. The model does seem to be better at predicting the lower values of Y however, as seen by the cluster of points near the line of perfect fit, towards the bottom left of the graph. As the values of Y get higher, however, the points become more scattered, indicating that the model is not at good at predicting the higher Y values. There also somewhat appears to be a pattern in the error bars, which also indicates that the model may be better at predicting the lower values of Y. 
 
