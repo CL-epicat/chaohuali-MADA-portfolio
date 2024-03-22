@@ -511,6 +511,8 @@ null_model_pred <- train_data %>%
   select(Y, null_pred) %>%
   rename(.pred = null_pred) %>%
   mutate(model = "Null Model")
+
+train_data <- train_data %>% select(-null_pred)
 ```
 
 Combine all predictions into one dataset. 
@@ -669,4 +671,56 @@ ggplot(train_data, aes(x = Y)) +
 #### Interpretation 
 
 As seen in the graph above, the points on the graph are relatively close to the line of perfect fit, which suggests that the model's predictions are reasonably accurate. The model does seem to be better at predicting the lower values of Y however, as seen by the cluster of points near the line of perfect fit, towards the bottom left of the graph. As the values of Y get higher, however, the points become more scattered, indicating that the model is not at good at predicting the higher Y values. There also somewhat appears to be a pattern in the error bars, which also indicates that the model may be better at predicting the lower values of Y. 
+
+
+
+# Part 3
+
+## Final evaluation using test data
+
+Use model 2 to make predictions for the test data and create a dataframe that contains
+observed data and predicted data for both train data and test data. 
+```{r}
+#make predictions using test data
+pred_test <- predict(linfit2, new_data = test_data)$.pred
+
+#create dataframes for predictions on train data and test data respectively
+test_pred <- data.frame(
+  Observed  = test_data$Y,
+  Predicted  = pred_test,
+  label="Predictions on test data")
+
+train_pred <- data.frame(
+  Observed  = train_data$Y,
+  Predicted  = pred2$.pred,
+  label="Predictions on train data")
+
+#concatenate two dataframes above
+graph_3<-rbind(train_pred,test_pred)
+```
+
+Plot predicted versus observed values for both the train data and test data
+
+```{r}
+ggplot(graph_3, aes(x = Observed, y = Predicted, color = label, shape=label)) +
+  geom_point() +  
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +  
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values by Train/Test data", color = "Train/Test Data", shape ="Train/Test Data" ) +
+  theme_minimal() + # Use a minimal theme for aesthetics
+  scale_shape_manual(values = c(15, 17)) + # Set different shapes for train/test predictions
+  scale_color_manual(values = c("blue", "green"))
+```
+
+## Overall model assessment
+Model 1(DOSE) and Model 2(all predictors) both have much lower RMSE than the null model,
+regardless of fitting the model directly to train data or using cross-validation. This indicates 
+Model 1 and Model 2 have better performance than the null model. 
+
+Although Model 1 performs better than the null model, it does not predicts well. In the observed vs predicted value plot, predictions from Model 1 form three horizontal lines along the diagonal reference line. Model 1 is not able to capture the main pattern in the data. This is probably due 
+to the lack of variation in DOSE which has only three values. I would not use Model 1 to make predictions for real purposes.
+
+Model 2 has better performance with additional predictors added. It has the lowest RMSE; the data 
+points on observed vs predicted plot generally scatter around the diagonal line, the confidence intervals for predictions are not too wide; and there is no obvious odd pattern in the residual vs predicted value plot. This indicates Model 2 performs well and can captures the main pattern in the data. Most importantly, the data points on the observed vs predicted plot using the test data scatter around the diagonal line, which indicates the predictions on the test data are generally accurate. I would use this model to make predictions. But I would be careful for predicted values that are too high (roughly over 4000),as the observed vs predicted plot indicates lower accuracy for that range.   
+
+
 
