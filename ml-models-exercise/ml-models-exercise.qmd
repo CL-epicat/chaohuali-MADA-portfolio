@@ -1,0 +1,270 @@
+---
+title: "Machine Learning Models Exercise (Week 11)"
+---
+
+## Preliminaries
+
+Load packages and data
+```{r}
+#Load packages 
+library(here)
+library(tidyverse)
+library(tidymodels) 
+library(ggplot2)
+library(yardstick)
+library(glmnet)
+library(ranger)
+
+#read previously saved rds data
+module11<-readRDS( here("ml-models-exercise", "merged_drug2.rds"))
+
+#save a seed value
+rngseed = 1234
+```
+
+## More processing
+Write code that changes the RACE variable such that it combines categories 7 and 88 and puts them in a category called 3.
+```{r}
+#check levels in RACE
+table(module11$RACE)
+
+#recode 7 and 88 as 3 in RACE
+module11$RACE <- ifelse(module11$RACE == 7 | module11$RACE == 88, 3, module11$RACE)
+table(module11$RACE)
+
+#set variables type for RACE
+module11<-module11  %>%
+  mutate(RACE=as.factor(RACE),
+         DOSE=as.numeric(DOSE))
+
+```
+
+## Pairwise correlations
+Make a correlation plot for the continuous variables
+```{r}
+#make a correlation plot for the continuous variables
+pairs(module11[, c("Y","DOSE", "AGE", "WT", "HT")], main = "Scatter Plot Matrix for Y, DOSE, AGE, WT, and HT")
+
+#calcualte correlation coefficients
+cor(module11[, c("Y", "DOSE","AGE", "WT", "HT")])
+```
+WT and HT seem strongly correlated according to the scatterplot, but the correlation coefficient
+is 0.6 which is lower than the threshold 0.9. There is no considerable collinearity among the variables. 
+
+## Feature engineering
+
+```{r}
+#create BMI based on WT and HT
+module11$BMI<-module11$WT/(module11$HT^2)
+```
+
+## Model building
+### First fit
+
+(1) Fit a linear model with all predictors.
+```{r}
+#fit linear model: Y~all predictors
+lin_mod <- linear_reg() %>% set_engine("lm")
+lin_fit <- lin_mod %>% fit(Y ~ ., data = module11)
+tidy(lin_fit)
+
+# make predictions on the original data
+predictions1 <- predict(lin_fit, new_data = module11)
+
+# Compute RMSE 
+rmse_1 <- rmse_vec(module11$Y, predictions1$.pred)
+# print RMSE
+cat("RMSE:", rmse_1, "\n")
+
+#Plot observed vs predicted values
+plot1<-data.frame(
+  observed=module11$Y,
+  predicted=predictions1$.pred
+)
+
+ggplot(plot1 ,aes(x = observed, y = predicted)) +
+  geom_point() +  
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue", linewidth=1) +  
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values (Linear: Y~All predictors)" ) +
+  theme_minimal()  # Use a minimal theme for aesthetics
+```
+
+
+
+(2) Fit a LASSO model with all predictors.
+```{r}
+#fit LASSO model: Y~all predictors
+lasso_mod <- linear_reg(penalty = 0.1) %>% set_engine("glmnet")
+lasso_fit <- lasso_mod %>% fit(Y ~ ., data = module11)
+tidy(lasso_fit)
+
+# make predictions on the original data
+predictions2 <- predict(lasso_fit, new_data = module11)
+
+# Compute RMSE 
+rmse_2 <- rmse_vec(module11$Y, predictions2$.pred)
+# print RMSE
+cat("RMSE:", rmse_2, "\n")
+
+#Plot observed vs predicted values
+plot2<-data.frame(
+  observed=module11$Y,
+  predicted=predictions2$.pred
+)
+
+ggplot(plot2 ,aes(x = observed, y = predicted)) +
+  geom_point() +  
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue", linewidth=1) +  
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values (LASSO: Y~All predictors)" ) +
+  theme_minimal()  # Use a minimal theme for aesthetics
+```
+
+
+(3) Fit a random forest model with all predictors.
+```{r}
+#set random seed
+set.seed(rngseed)
+
+#fit RF model: Y~all predictors
+RF_mod <-  rand_forest(mode = "regression") %>% set_engine("ranger", seed = rngseed)
+RF_fit <- RF_mod %>% fit(Y ~ ., data = module11)
+print(RF_fit)
+
+# make predictions on the original data
+predictions3 <- predict(RF_fit, new_data = module11)
+
+# Compute RMSE 
+rmse_3 <- rmse_vec(module11$Y, predictions3$.pred)
+# print RMSE
+cat("RMSE:", rmse_3, "\n")
+
+#Plot observed vs predicted values
+plot3<-data.frame(
+  observed=module11$Y,
+  predicted=predictions3$.pred
+)
+
+ggplot(plot3 ,aes(x = observed, y = predicted)) +
+  geom_point() +  
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "blue", linewidth=1) +  
+  labs(x = "Observed Values", y = "Predicted Values", title = "Observed vs. Predicted Values (Random Forest: Y~All predictors)" ) +
+  theme_minimal()  # Use a minimal theme for aesthetics
+```
+Model performance:
+1. Linear       : RMSE=572
+2. LASSO        : RMSE=572
+3. Random Forest: RMSE=362
+The linear model and LASSO have similar performance, likely due to facts that penalty 
+parameter is too small and there is low collinearity among the predictors. 
+The random forest performs the best, as it has the lowest RMSE, and data points on the 
+observed vs predicted values plot are closer to the diagonal line. 
+
+
+## Tuning the models
+
+(1) Tune the LASSO model
+```{r}
+#define a grid of penalty parameters ranging from 1E-5 to 1E2
+penalty_grid <- grid_regular(penalty(range = c(log10(1E-5), log10(1E2))), levels = 50)
+
+#specify the LASSO model 
+lasso_mod_tune <- linear_reg(penalty = tune()) %>%  set_engine("glmnet")
+
+#create a workflow to tune the LASSO model
+lasso_workflow <- workflow() %>%
+  add_model(lasso_mod_tune) %>%
+  add_formula(Y ~ .)
+
+#create apparent resamples as the same data is used for performance evaluation
+apparent_sample <- apparent(module11)
+
+#tune the LASSO model using tune_grid() 
+lasso_tuned <- tune_grid(
+  object = lasso_workflow,
+  grid = penalty_grid,
+  resamples=apparent_sample
+)
+
+#Show diagnostics of the LASSO tuning
+lasso_tuned %>% autoplot() + ggtitle("LASSO Tuning Results")
+```
+LASSO has better performance for low penalty values and gets worse if the penalty parameter increases. This is probably because the total numbers of predictors is 
+too small. As penalty parameter increases, some predictors are dropped, and thus fewer 
+predictors are left to account for the variation in the outcome Y. With fewer predictors
+left, the model is underfitted which leads to poorer performance of the model. 
+
+
+(2) Tune the random forest
+```{r}
+#set random seed
+set.seed(rngseed)
+
+#define a grid of penalty parameters range for mtry (1 to 7) and min_n (1 to 21)
+rf_grid <- grid_regular( mtry(range = c(1, 7)), min_n(range = c(1, 21)), levels = 7)
+
+#specify the random forest  
+RF_mod_tune <-  rand_forest(mtry = tune(), min_n = tune(),trees=300)  %>% 
+  set_engine("ranger", seed = rngseed) %>%
+  set_mode("regression")
+  
+#create a workflow to tune the RF model
+rf_workflow <- workflow() %>%
+  add_model(RF_mod_tune) %>%
+  add_formula(Y ~ .)
+
+#tune the Random Forest model using tune_grid() 
+RF_tuned <- tune_grid(
+  object = rf_workflow,
+  grid = rf_grid,
+  resamples=apparent_sample
+)
+
+#Show diagnostics of the RF tuning
+RF_tuned %>% autoplot() + ggtitle("Random Forest Tuning Results")
+```
+
+## Tuning with CV
+Repeat tuning the LASSO and Random Forest models with cross-validation
+
+
+(1) Tune the LASSO model with cross-validation
+```{r}
+#set random seed
+set.seed(rngseed)
+
+#create CV resamples (5-fold cross-validation, 5 times)
+cv_samples <- vfold_cv(module11, v = 5, repeats = 5)
+
+#use the same workflow to tune the LASSO model with cross-validation
+lasso_tuned_cv <- tune_grid(
+  object = lasso_workflow,
+  grid = penalty_grid,
+  resamples=cv_samples
+)
+
+#Show diagnostics of the LASSO tuning
+lasso_tuned_cv %>% autoplot() + ggtitle("LASSO Tuning Results with CV")
+```
+
+
+(2) Tune the random forest with cross-validation
+```{r}
+#set random seed
+set.seed(rngseed)
+
+#use the same workflow to tune the Random Forest model with cross-validation
+RF_tuned_cv <- tune_grid(
+  object = rf_workflow,
+  grid = rf_grid,
+  resamples=cv_samples
+)
+
+#show diagnostics of the RF tuning
+RF_tuned_cv %>% autoplot() + ggtitle("Random Forest Tuning Results with CV")
+```
+
+LASSO models with and without CV display similar pattern in the change of performance as penalty parameter increases. However, LASSO model without CV has better performance (lower RMSE) than LASSO model with CV given the same penalty value. This is probably due to fact that its performance evaluation is based on the same data used for model fitting. 
+
+Random forest models with and without CV also show similar pattern in the change of performance as hyperparameters change. Generally, model performance is higher with larger number of randomly selected predictors and larger minimal node sizes. When cross-validation is used, minimal node size seems to have a smaller impact on the performance of the model. 
+
+Based on results with cross-validation, LASSO model has lower RMSE and higher r-squared than random forest when penalty parameter is small. Thus, LASSO model has better performance than the random forest model. 

@@ -24,6 +24,8 @@ website:
             file: cdcdata-exercise/cdcdata-exercise.qmd
           - text: "Fitting Exercise (Week 8)"
             file: fitting-exercise/fitting-exercise.qmd
+          - text: "Machine Learning"
+            file: ml-models-exercise/ml-models-exercise.qmd
     right:
       - icon: github 
         href: https://github.com/CL-epicat/chaohuali-MADA-portfolio       
