@@ -2,4 +2,306 @@
 title: "Tidy Tuesday Exercise"
 ---
 
-Placeholder file for the future Tidy Tuesday exercise.
+# Load packages
+```{r}
+library(here)
+library(Hmisc)
+library(tidyverse)
+library(rsample)
+library(tidymodels)
+library(kknn)
+library(gtsummary)
+library(pROC)
+```
+
+# Load Tidy Tuesday Data
+  Load 2023 & 2024 US Solar Eclipses Data
+```{r}
+#Read directly from GitHub
+eclipse_annular_2023 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-04-09/eclipse_annular_2023.csv')
+eclipse_total_2024 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-04-09/eclipse_total_2024.csv')
+eclipse_partial_2023 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-04-09/eclipse_partial_2023.csv')
+eclipse_partial_2024 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2024/2024-04-09/eclipse_partial_2024.csv')
+
+#save the data in the "data" folder
+saveRDS(eclipse_annular_2023,here("data","eclipse_annular_2023.rds")) 
+saveRDS(eclipse_total_2024,here("data","eclipse_total_2024.rds")) 
+saveRDS(eclipse_partial_2023,here("data","eclipse_partial_2023.rds")) 
+saveRDS(eclipse_partial_2024,here("data","eclipse_partial_2024.rds")) 
+```
+Four datasets with similar structures were provided. For this exercise, I chose 'eclipse_total_2024'. 
+This dataset contains information of cities in the US on the path of 2024 totality eclipse. 
+
+
+# 1.Load, wrangle and explore the data
+```{r}
+#Read saved rds data of 2024 totality eclipse
+total_2024<-readRDS( here("data", "eclipse_total_2024.rds"))
+
+#Summarize variables in the dataset
+describe(total_2024)
+```
+According the summaries above, there are 3330 cities from 14 states on the path of 2024
+totality eclipse. None of the variables contain missing values. The latitude of the cities 
+ranges from 28.4461 to 46.9112; the longitude ranges from -101.159 to -67.4292.There are duplicate
+names for the cities (2938 distinct names). 
+
+
+```{r}
+#Calculate eclipse duration 
+total_2024<-total_2024 %>%
+  mutate(duration=as.numeric(difftime(strptime(eclipse_6, "%H:%M:%S"),
+                                      strptime(eclipse_1, "%H:%M:%S"),units = "mins")))
+
+#Plot latitudes and longitudes of the cities by state
+ggplot(total_2024, aes(x = lon, y = lat, group = state, color = state)) +
+  geom_point() +
+  labs(title = "Latitudes and longitudes of the cities on the path of 2024 totality eclipse by state",
+       x = "Longitude",
+       y = "Latitude",
+       color = "State")
+```
+
+```{r}
+#Plot eclipse duration and longitudes of the cities by state
+ggplot(total_2024, aes(x = lon, y = duration, group = state, color = state)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Longitudes and eclipse duration of the cities on the path \nof 2024 totality eclipse by state",
+       x = "Longitude",
+       y = "Eclipse duration(min)",
+       color = "State")
+```
+
+```{r}
+#Plot eclipse duration and latitudes of the cities by state
+ggplot(total_2024, aes(x = lat, y = duration, group = state, color = state)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Latitudes and eclipse duration of the cities on the path \nof 2024 totality eclipse by state",
+       x = "Latitude",
+       y = "Eclipse duration(min)",
+       color = "State")
+```
+
+
+```{r}
+#Make correlation matrix for latitude, longitude and eclipse duration
+cor(total_2024[,c('lat','lon','duration')])
+```
+The correlation coefficients are all greater than 0.95, indicating very high correlation 
+among the latitude, longitude and eclipse duration. 
+
+
+# 2.Determine the research question
+With such correlated data and limited number of variables, it is difficult to come 
+up with a research question. Thus, it is necessary  to create some synthetic data.
+As eclipse is distracting and reduces daylight, it might increase the chance of traffic 
+accidents. I would synthesize two variables: (1) whether the city had more traffic accidents
+on the day of eclipse than a week before, codes as Yes/No; (2) traffic infrastructure 
+quality index, ranges from 1-10. 
+
+The research question would be: does longer eclipse duration increase the odds of traffic 
+accidents among the cities on the path of 2024 totality eclipse? 
+
+I would use whether the city has more traffic accidents than a week before as the outcome,
+and use eclipse duration as the main predictor, and use state and traffic infrastructure 
+quality index as covariates. 
+
+
+# 3.Pre-process data for analysis
+Create synthetic variables: 
+
+(1) more_accident: whether the city had more traffic accidents
+on the day of eclipse than a week before, codes as Yes/No. To create an artificial association,
+cities with eclipse duration>150 mins will have a 80% chance of being coded as 'Yes'; cities
+with eclipse duration<=150 mins will have a 40% chance of being coded as 'Yes'. 
+
+(2) traffic: traffic infrastructure quality index, ranges from 1-10. The variable will 
+take a random number between 1 and 10. 
+```{r}
+#set seed
+rngseed<-1234
+set.seed(rngseed)
+
+#function to generate more_accident variable based on duration
+generate_more_accident <- function(duration) {
+  if (duration > 150) {
+    return(ifelse(runif(1) < 0.9, 'Yes', 'No'))
+  } else {
+    return(ifelse(runif(1) < 0.4, 'Yes', 'No'))
+  }
+}
+
+#apply the function to create more_accident variable
+total_2024$more_accident <- sapply(total_2024$duration, generate_more_accident)
+
+#create traffic variable
+set.seed(rngseed)
+total_2024$traffic<-runif(3330, min = 1, max = 10)
+
+#check two synthetic variables
+describe(total_2024$traffic)
+describe(total_2024$more_accident)
+
+mean_duration_by_accident <- aggregate(total_2024$duration, by=list(more_accident=total_2024$more_accident), FUN=mean)
+mean_duration_by_accident #check crude association
+```
+
+Split the data into a 75% train set and a 25% test set 
+```{r}
+#create a subset that contains variables for analysis
+data_analysis<-total_2024 %>%
+  mutate(state=as.factor(state), more_accident=as.factor(more_accident))  %>%
+  select(state, duration, more_accident, traffic)
+
+#splits the dataset randomly into a 75% train and 25% test set
+data_split <- initial_split(data_analysis, prop = 3/4)
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+```
+
+
+
+# 4.Fit 3 different model types to the data using the tidymodels framework.
+  Logistic regression, Random forests, and K-nearest neighbors will be fit to the data. 
+  
+```{r}
+#Fit logistic regression with 10-fold cross-validation
+
+#model specification
+logistic_spec <- logistic_reg() %>%
+  set_engine("glm") %>%
+  set_mode("classification")
+
+#define cross-validation
+set.seed(rngseed)
+cv_folds <- vfold_cv(train_data, v = 10)
+
+#workflow creation
+logistic_workflow <- workflow() %>%
+  add_formula(more_accident~duration+state+traffic) %>%
+  add_model(logistic_spec)
+
+#model fitting and evaluation
+set.seed(rngseed)
+fit_logistic <- fit_resamples(
+  logistic_workflow,
+  cv_folds,
+  control = control_resamples(save_pred = TRUE)
+)
+
+# print results (Accuracy and AUC)
+results_logistic <- collect_metrics(fit_logistic)
+print(results_logistic)
+```
+With 10-fold cross-validation, a logistic regression model generates an accuracy of 92.35%,
+and an AUC of 0.9696.  
+
+
+```{r}
+#Fit random forest with 10-fold cross-validation
+
+#random Forest model specification
+rf_spec <- rand_forest(trees = 100) %>%  # using 100 trees
+  set_engine("ranger") %>%
+  set_mode("classification")
+
+#workflow creation
+rf_workflow <- workflow() %>%
+  add_formula(more_accident ~duration+state+traffic) %>%
+  add_model(rf_spec)
+
+#model fitting and evaluation
+set.seed(rngseed)
+fit_rf <- fit_resamples(
+  rf_workflow,
+  cv_folds,
+  control = control_resamples(save_pred = TRUE)
+)
+
+#print the results(accuracy and AUC)
+results_rf <- collect_metrics(fit_rf)
+print(results_rf)
+```
+With 10-fold cross-validation, a random forest model with 100 trees generates an accuracy of 99.96%, and an AUC of 1. 
+
+
+```{r}
+#specify the KNN model 
+knn_spec <- nearest_neighbor(neighbors = 10) %>%  # using 10 neighbors
+  set_engine("kknn") %>%
+  set_mode("classification")
+
+#create a recipe for pre-processing
+recipe_knn <- recipe(more_accident ~ state + duration + traffic, data = train_data) %>%
+  step_dummy(all_nominal(), -all_outcomes()) %>%  # handle categorical data
+  step_normalize(all_predictors())  # scale numeric predictors
+
+#workflow creation
+knn_workflow <- workflow() %>%
+  add_recipe(recipe_knn) %>%
+  add_model(knn_spec)
+
+#model fitting and evaluation
+set.seed(rngseed)
+fit_knn <- fit_resamples(
+  knn_workflow,
+  cv_folds,
+  control = control_resamples(save_pred = TRUE)
+)
+
+#print the results(accuracy and AUC)
+results_knn <- collect_metrics(fit_knn)
+print(results_knn)
+```
+With 10-fold cross-validation, a KNN model with 10 neighbors generates an accuracy of 98.76%,
+and an AUC of 0.9974. 
+
+
+# 5. Decide on the final model
+All the three models have satisfying predictive power, as they all yield accuracy>90% 
+and AUC>0.9. Although random forest and KNN models have slightly better performance,
+the logistic model is selected as the final model. This is because the main purpose of 
+this analysis is to understand the relationship between the risk of having more traffic
+accidents than usual and the eclipse duration. The results for the logistic regression 
+are much easier to interpret and understand than the other two models. 
+
+
+# 6. Evaluate the model performance on the test data
+Fit logistic regression model to the entire train data and then fit the model to 
+the test data to evaluate performance.
+```{r}
+#fit the logistic model to the entire train data using the previous workflow
+logistic_final_fit <- fit(logistic_workflow, data = train_data)
+
+#display model coefficients
+tidy(logistic_final_fit)
+```
+
+
+```{r}
+#fit the model to the test data
+test_predictions <- predict(logistic_final_fit, new_data = test_data, type = "class")
+
+#calculate accuracy
+test_data$predicted <- test_predictions$.pred_class
+Test_accuracy <- accuracy(data = test_data, truth = more_accident, estimate = predicted)
+print(Test_accuracy)
+
+#confusion matrix table
+conf_mat(test_data, truth = more_accident, estimate = predicted)
+```
+
+
+# 7. Summary 
+In the final logistic regression model, 1 min increase in the eclipse duration is associated 
+with 2.46 times increase in the odds of having more traffic accidents than usual among the US 
+cities on the path of 2024 totality eclipse (OR=2.46, 95% CI=2.01-3.04, P-value<.001). The model has an accuracy of 91.8% after being applied to the test data. These results are expected, as we assigned higher proportion of 'Yes' for cities with eclipse duration > 150 mins when the outcome variable was synthesized.  
+
+
+```{r}
+#display model summary (Odds ratios)
+tbl_regression(logistic_final_fit, exponentiate = TRUE)
+```
+
